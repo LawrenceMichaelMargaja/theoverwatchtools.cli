@@ -117,7 +117,7 @@ func (m *Repository) getCapturePages(
 	q := mysqlmodel.CapturePages(queryMods...)
 	totalCount, err := q.Count(ctx, ctxExec)
 	if err != nil {
-		return nil, fmt.Errorf("get organizations count: %v", err)
+		return nil, fmt.Errorf("get capture pages count: %v", err)
 	}
 
 	page := pagination.Page
