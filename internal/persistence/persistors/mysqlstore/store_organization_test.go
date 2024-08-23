@@ -17,11 +17,17 @@ import (
 	"time"
 )
 
+type argsMutationsGetOrganizations struct {
+	User         mysqlmodel.User
+	Organization []mysqlmodel.Organization
+}
+
 type testCaseGetOrganizations struct {
-	name       string
-	filter     *model.OrganizationFilters
-	mutations  func(t *testing.T, db *sqlx.DB) []int
-	assertions func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedOrganizations, err error, ids []int)
+	name          string
+	filter        *model.OrganizationFilters
+	argsMutations *argsMutationsGetOrganizations
+	mutations     func(t *testing.T, db *sqlx.DB, args *argsMutationsGetOrganizations) []int
+	assertions    func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedOrganizations, err error, ids []int)
 }
 
 func getTestCasesGetOrganizations() []testCaseGetOrganizations {
@@ -31,6 +37,26 @@ func getTestCasesGetOrganizations() []testCaseGetOrganizations {
 			filter: &model.OrganizationFilters{
 				IdsIn: []int{4},
 			},
+			argsMutations: &argsMutationsGetOrganizations{
+				User: mysqlmodel.User{
+					Firstname:         "Demby",
+					Lastname:          "Abella",
+					Email:             "demby@test.com",
+					Password:          "password",
+					CategoryTypeRefID: 1,
+				},
+				Organization: []mysqlmodel.Organization{
+					{
+						ID:            4,
+						Name:          "TEST",
+						CreatedBy:     null.IntFrom(4),
+						LastUpdatedBy: null.IntFrom(4),
+						CreatedAt:     time.Now(),
+						LastUpdatedAt: null.TimeFrom(time.Now()),
+						IsActive:      true,
+					},
+				},
+			},
 			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedOrganizations, err error, ids []int) {
 				require.NoError(t, err, "unexpected error")
 				require.NotNil(t, paginated, "unexpected nil paginated")
@@ -46,32 +72,18 @@ func getTestCasesGetOrganizations() []testCaseGetOrganizations {
 
 				modelhelpers.AssertNonEmptyOrganizations(t, paginated.Organizations)
 			},
-			mutations: func(t *testing.T, db *sqlx.DB) []int {
-				entryUser := mysqlmodel.User{
-					Firstname:         "Demby",
-					Lastname:          "Abella",
-					Email:             "demby@test.com",
-					Password:          "password",
-					CategoryTypeRefID: 1,
-				}
-				err := entryUser.Insert(context.Background(), db, boil.Infer())
+			mutations: func(t *testing.T, db *sqlx.DB, args *argsMutationsGetOrganizations) []int {
+				err := args.User.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting in the user db")
 
-				entry := mysqlmodel.Organization{
-					ID:            4,
-					Name:          "TEST",
-					CreatedBy:     null.IntFrom(entryUser.ID),
-					LastUpdatedBy: null.IntFrom(entryUser.ID),
-					CreatedAt:     time.Now(),
-					LastUpdatedAt: null.TimeFrom(time.Now()),
-					IsActive:      true,
+				var ids []int
+				for _, organization := range args.Organization {
+					err = organization.Insert(context.Background(), db, boil.Infer())
+					require.NoError(t, err, "error inserting sample data")
+					ids = append(ids, organization.ID)
 				}
-				err = entry.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting sample data")
 
-				Ids := []int{entryUser.ID}
-
-				return Ids
+				return ids
 			},
 		},
 		{
@@ -79,6 +91,36 @@ func getTestCasesGetOrganizations() []testCaseGetOrganizations {
 			filter: &model.OrganizationFilters{
 				OrganizationNameIn: []string{"Lawrence", "Younes"},
 			},
+			argsMutations: &argsMutationsGetOrganizations{
+				User: mysqlmodel.User{
+					ID:                4,
+					Firstname:         "Demby",
+					Lastname:          "Abella",
+					Email:             "demby@test.com",
+					Password:          "password",
+					CategoryTypeRefID: 1,
+				},
+				Organization: []mysqlmodel.Organization{
+					{
+						ID:            1,
+						Name:          "Lawrence",
+						CreatedBy:     null.IntFrom(4),
+						LastUpdatedBy: null.IntFrom(4),
+						CreatedAt:     time.Now(),
+						LastUpdatedAt: null.TimeFrom(time.Now()),
+						IsActive:      true,
+					},
+					{
+						ID:            2,
+						Name:          "Younes",
+						CreatedBy:     null.IntFrom(4),
+						LastUpdatedBy: null.IntFrom(4),
+						CreatedAt:     time.Now(),
+						LastUpdatedAt: null.TimeFrom(time.Now()),
+						IsActive:      true,
+					},
+				},
+			},
 			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedOrganizations, err error, ids []int) {
 				require.NoError(t, err, "unexpected error")
 				require.NotNil(t, paginated, "unexpected nil paginated")
@@ -94,47 +136,18 @@ func getTestCasesGetOrganizations() []testCaseGetOrganizations {
 
 				modelhelpers.AssertNonEmptyOrganizations(t, paginated.Organizations)
 			},
-			mutations: func(t *testing.T, db *sqlx.DB) []int {
-				entryUser := mysqlmodel.User{
-					Firstname:         "Demby",
-					Lastname:          "Abella",
-					Email:             "demby@test.com",
-					Password:          "password",
-					CategoryTypeRefID: 1,
+			mutations: func(t *testing.T, db *sqlx.DB, args *argsMutationsGetOrganizations) []int {
+				err := args.User.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting the user into the database")
+
+				var ids []int
+				for _, organization := range args.Organization {
+					err = organization.Insert(context.Background(), db, boil.Infer())
+					require.NoError(t, err, "error inserting sample data")
+					ids = append(ids, organization.ID)
 				}
 
-				err := entryUser.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting in the user db")
-
-				entryOrg1 := mysqlmodel.Organization{
-					ID:            1,
-					Name:          "Lawrence",
-					CreatedBy:     null.IntFrom(entryUser.ID),
-					LastUpdatedBy: null.IntFrom(entryUser.ID),
-					CreatedAt:     time.Now(),
-					LastUpdatedAt: null.TimeFrom(time.Now()),
-					IsActive:      true,
-				}
-
-				entryOrg2 := mysqlmodel.Organization{
-					ID:            2,
-					Name:          "Younes",
-					CreatedBy:     null.IntFrom(entryUser.ID),
-					LastUpdatedBy: null.IntFrom(entryUser.ID),
-					CreatedAt:     time.Now(),
-					LastUpdatedAt: null.TimeFrom(time.Now()),
-					IsActive:      true,
-				}
-
-				err = entryOrg1.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting first organization")
-
-				err = entryOrg2.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting second organization")
-
-				Ids := []int{entryOrg1.ID, entryOrg2.ID}
-
-				return Ids
+				return ids
 			},
 		},
 		{
@@ -144,34 +157,39 @@ func getTestCasesGetOrganizations() []testCaseGetOrganizations {
 				IdsIn:              []int{1},
 				CreatedBy:          null.IntFrom(4),
 			},
-			mutations: func(t *testing.T, db *sqlx.DB) []int {
-				entryUser := mysqlmodel.User{
+			argsMutations: &argsMutationsGetOrganizations{
+				User: mysqlmodel.User{
+					ID:                4,
 					Firstname:         "Demby",
 					Lastname:          "Abella",
 					Email:             "demby@test.com",
 					Password:          "password",
 					CategoryTypeRefID: 1,
-				}
-
-				err := entryUser.Insert(context.Background(), db, boil.Infer())
+				},
+				Organization: []mysqlmodel.Organization{
+					{
+						ID:            1,
+						Name:          "Demby",
+						CreatedBy:     null.IntFrom(4),
+						LastUpdatedBy: null.IntFrom(4),
+						CreatedAt:     time.Now(),
+						LastUpdatedAt: null.TimeFrom(time.Now()),
+						IsActive:      true,
+					},
+				},
+			},
+			mutations: func(t *testing.T, db *sqlx.DB, args *argsMutationsGetOrganizations) []int {
+				err := args.User.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting in the user db")
 
-				entry := mysqlmodel.Organization{
-					ID:            1,
-					Name:          "Demby",
-					CreatedBy:     null.IntFrom(entryUser.ID),
-					LastUpdatedBy: null.IntFrom(entryUser.ID),
-					CreatedAt:     time.Now(),
-					LastUpdatedAt: null.TimeFrom(time.Now()),
-					IsActive:      true,
+				var ids []int
+				for _, organization := range args.Organization {
+					err = organization.Insert(context.Background(), db, boil.Infer())
+					require.NoError(t, err, "error inserting sample data")
+					ids = append(ids, organization.ID)
 				}
 
-				err = entry.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting first organization")
-
-				Ids := []int{entry.ID}
-
-				return Ids
+				return ids
 			},
 			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedOrganizations, err error, ids []int) {
 				require.NoError(t, err, "unexpected error")
@@ -191,7 +209,7 @@ func getTestCasesGetOrganizations() []testCaseGetOrganizations {
 				IdsIn:                []int{1},
 				OrganizationIsActive: null.BoolFrom(false),
 			},
-			mutations: func(t *testing.T, db *sqlx.DB) []int {
+			mutations: func(t *testing.T, db *sqlx.DB, args *argsMutationsGetOrganizations) []int {
 				return nil
 			},
 			assertions: func(t *testing.T, db *sqlx.DB, paginated *model.PaginatedOrganizations, err error, ids []int) {
@@ -236,24 +254,48 @@ func Test_GetOrganizations(t *testing.T) {
 			require.NoError(t, err, "unexpected error fetching the db from the tx handler")
 			require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
 
-			id := testCase.mutations(t, db)
+			id := testCase.mutations(t, db, testCase.argsMutations)
 			paginated, err := m.GetOrganizations(testCtx, txHandlerDb, testCase.filter)
 			testCase.assertions(t, db, paginated, err, id)
 		})
 	}
 }
 
+type argsMutationsDeleteOrganization struct {
+	User         mysqlmodel.User
+	Organization mysqlmodel.Organization
+}
+
 type testCaseDeleteOrganization struct {
-	name       string
-	id         int
-	assertions func(t *testing.T, db *sqlx.DB, id int)
-	mutations  func(t *testing.T, db *sqlx.DB) (orgId int)
+	name          string
+	argsMutations *argsMutationsDeleteOrganization
+	assertions    func(t *testing.T, db *sqlx.DB, id int)
+	mutations     func(t *testing.T, db *sqlx.DB, args *argsMutationsDeleteOrganization) int
 }
 
 func getDeleteOrganizationTestCases() []testCaseDeleteOrganization {
 	return []testCaseDeleteOrganization{
 		{
 			name: "success",
+			argsMutations: &argsMutationsDeleteOrganization{
+				User: mysqlmodel.User{
+					ID:                4,
+					Firstname:         "Demby",
+					Lastname:          "Abella",
+					Email:             "demby@test.com",
+					Password:          "password",
+					CategoryTypeRefID: 1,
+				},
+				Organization: mysqlmodel.Organization{
+					ID:            1,
+					Name:          "Lawrence",
+					CreatedBy:     null.IntFrom(4),
+					LastUpdatedBy: null.IntFrom(4),
+					CreatedAt:     time.Now(),
+					LastUpdatedAt: null.TimeFrom(time.Now()),
+					IsActive:      true,
+				},
+			},
 			assertions: func(t *testing.T, db *sqlx.DB, id int) {
 				entry, err := mysqlmodel.FindOrganization(context.TODO(), db, id)
 				require.Nil(t, err, "unexpected non-nil error")
@@ -261,52 +303,47 @@ func getDeleteOrganizationTestCases() []testCaseDeleteOrganization {
 
 				assert.Equal(t, false, entry.IsActive)
 			},
-			mutations: func(t *testing.T, db *sqlx.DB) (orgId int) {
-				entryUser := mysqlmodel.User{
+			mutations: func(t *testing.T, db *sqlx.DB, args *argsMutationsDeleteOrganization) int {
+				err := args.User.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting in the user db")
+
+				err = args.Organization.Insert(context.TODO(), db, boil.Infer())
+				assert.NoError(t, err, "unexpected insert error")
+
+				return args.Organization.ID
+			},
+		},
+		{
+			name: "failure-non-existent-organization",
+			argsMutations: &argsMutationsDeleteOrganization{
+				User: mysqlmodel.User{
+					ID:                4,
 					Firstname:         "Demby",
 					Lastname:          "Abella",
 					Email:             "demby@test.com",
 					Password:          "password",
 					CategoryTypeRefID: 1,
-				}
-				err := entryUser.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting in the user db")
-
-				entry := mysqlmodel.Organization{
+				},
+				Organization: mysqlmodel.Organization{
 					ID:            1,
 					Name:          "Lawrence",
-					CreatedBy:     null.IntFrom(entryUser.ID),
-					LastUpdatedBy: null.IntFrom(entryUser.ID),
+					CreatedBy:     null.IntFrom(4),
+					LastUpdatedBy: null.IntFrom(4),
 					CreatedAt:     time.Now(),
 					LastUpdatedAt: null.TimeFrom(time.Now()),
 					IsActive:      true,
-				}
-				err = entry.Insert(context.TODO(), db, boil.Infer())
-				assert.NoError(t, err, "unexpected insert error")
-
-				return entry.ID
+				},
 			},
-		},
-		{
-			name: "failure-non-existent-organization",
 			assertions: func(t *testing.T, db *sqlx.DB, id int) {
 				_, err := mysqlmodel.FindOrganization(context.TODO(), db, id)
 				require.Error(t, err, "expected an error for non-existent organization")
 				require.Contains(t, err.Error(), "no rows", "error should indicate that the organization was not found")
 			},
-			mutations: func(t *testing.T, db *sqlx.DB) (orgId int) {
-				entryUser := mysqlmodel.User{
-					ID:                931,
-					Firstname:         "Demby",
-					Lastname:          "Abella",
-					Email:             "demby@test.com",
-					Password:          "password",
-					CategoryTypeRefID: 1,
-				}
-				err := entryUser.Insert(context.Background(), db, boil.Infer())
+			mutations: func(t *testing.T, db *sqlx.DB, args *argsMutationsDeleteOrganization) int {
+				err := args.User.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting in the user db")
 
-				return entryUser.ID
+				return args.User.ID
 			},
 		},
 	}
@@ -340,7 +377,7 @@ func Test_DeleteOrganization(t *testing.T) {
 			require.NoError(t, err, "unexpected error fetching the db from the tx handler")
 			require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
 
-			id := testCase.mutations(t, db)
+			id := testCase.mutations(t, db, testCase.argsMutations)
 			err = m.DeleteOrganization(testCtx, txHandlerDb, id)
 			require.NoError(t, err, "error deleting organization")
 			testCase.assertions(t, db, id)
@@ -348,16 +385,46 @@ func Test_DeleteOrganization(t *testing.T) {
 	}
 }
 
+type argsMutationsUpdateOrganization struct {
+	User                   mysqlmodel.User
+	Organization           mysqlmodel.Organization
+	UpdateOrganizationData *model.UpdateOrganization
+}
+
 type testCaseUpdateOrganization struct {
-	name       string
-	assertions func(t *testing.T, db *sqlx.DB, id int, err error)
-	mutations  func(t *testing.T, db *sqlx.DB) (updateData model.UpdateOrganization)
+	name          string
+	argsMutations *argsMutationsUpdateOrganization
+	assertions    func(t *testing.T, db *sqlx.DB, id int, err error)
+	mutations     func(t *testing.T, db *sqlx.DB, args *argsMutationsUpdateOrganization) *model.UpdateOrganization
 }
 
 func getUpdateOrganizationTestCases() []testCaseUpdateOrganization {
 	return []testCaseUpdateOrganization{
 		{
 			name: "success",
+			argsMutations: &argsMutationsUpdateOrganization{
+				User: mysqlmodel.User{
+					ID:                4,
+					Firstname:         "Demby",
+					Lastname:          "Abella",
+					Email:             "demby@test.com",
+					Password:          "password",
+					CategoryTypeRefID: 1,
+				},
+				Organization: mysqlmodel.Organization{
+					ID:            4,
+					Name:          "TEST",
+					CreatedBy:     null.IntFrom(4),
+					LastUpdatedBy: null.IntFrom(4),
+					CreatedAt:     time.Now(),
+					LastUpdatedAt: null.TimeFrom(time.Now()),
+					IsActive:      true,
+				},
+				UpdateOrganizationData: &model.UpdateOrganization{
+					Id:   4,
+					Name: null.StringFrom("Organization A new"),
+				},
+			},
 			assertions: func(t *testing.T, db *sqlx.DB, id int, err error) {
 				require.Nil(t, err, "unexpected non-nil error")
 				entry, err := mysqlmodel.FindOrganization(context.TODO(), db, id)
@@ -365,71 +432,53 @@ func getUpdateOrganizationTestCases() []testCaseUpdateOrganization {
 
 				assert.Equal(t, true, entry.IsActive)
 			},
-			mutations: func(t *testing.T, db *sqlx.DB) (updateData model.UpdateOrganization) {
-				entryUser := mysqlmodel.User{
-					Firstname:         "Demby",
-					Lastname:          "Abella",
-					Email:             "demby@test.com",
-					Password:          "password",
-					CategoryTypeRefID: 1,
-				}
-				err := entryUser.Insert(context.Background(), db, boil.Infer())
+			mutations: func(t *testing.T, db *sqlx.DB, args *argsMutationsUpdateOrganization) *model.UpdateOrganization {
+				err := args.User.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting in the user db")
 
-				entry := mysqlmodel.Organization{
-					ID:            4,
-					Name:          "TEST",
-					CreatedBy:     null.IntFrom(entryUser.ID),
-					LastUpdatedBy: null.IntFrom(entryUser.ID),
-					CreatedAt:     time.Now(),
-					LastUpdatedAt: null.TimeFrom(time.Now()),
-					IsActive:      true,
-				}
-				err = entry.Insert(context.Background(), db, boil.Infer())
+				err = args.Organization.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting sample data")
 
-				updateOrganizationData := model.UpdateOrganization{
-					Id:   4,
-					Name: null.StringFrom("Organization A new"),
-				}
-
-				return updateOrganizationData
+				return args.UpdateOrganizationData
 			},
 		},
 		{
 			name: "fail",
-			assertions: func(t *testing.T, db *sqlx.DB, id int, err error) {
-				require.Error(t, err, "expected error when updating a non-existent organization")
-				assert.Contains(t, err.Error(), "expected exactly one entry for entity: 32123")
-			},
-			mutations: func(t *testing.T, db *sqlx.DB) (updateData model.UpdateOrganization) {
-				entryUser := mysqlmodel.User{
+			argsMutations: &argsMutationsUpdateOrganization{
+				User: mysqlmodel.User{
+					ID:                4,
 					Firstname:         "Demby",
 					Lastname:          "Abella",
 					Email:             "demby@test.com",
 					Password:          "password",
 					CategoryTypeRefID: 1,
-				}
-				err := entryUser.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting in the user db")
-
-				entry := mysqlmodel.Organization{
+				},
+				Organization: mysqlmodel.Organization{
 					ID:            4,
 					Name:          "TEST",
-					CreatedBy:     null.IntFrom(entryUser.ID),
-					LastUpdatedBy: null.IntFrom(entryUser.ID),
+					CreatedBy:     null.IntFrom(4),
+					LastUpdatedBy: null.IntFrom(4),
 					CreatedAt:     time.Now(),
 					LastUpdatedAt: null.TimeFrom(time.Now()),
 					IsActive:      true,
-				}
-				err = entry.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting sample data")
-
-				updateData = model.UpdateOrganization{
+				},
+				UpdateOrganizationData: &model.UpdateOrganization{
 					Id:   32123,
 					Name: null.StringFrom("Wrong Name"),
-				}
-				return updateData
+				},
+			},
+			assertions: func(t *testing.T, db *sqlx.DB, id int, err error) {
+				require.Error(t, err, "expected error when updating a non-existent organization")
+				assert.Contains(t, err.Error(), "expected exactly one entry for entity: 32123")
+			},
+			mutations: func(t *testing.T, db *sqlx.DB, args *argsMutationsUpdateOrganization) *model.UpdateOrganization {
+				err := args.User.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting in the user db")
+
+				err = args.Organization.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting sample data")
+
+				return args.UpdateOrganizationData
 			},
 		},
 	}
@@ -460,9 +509,9 @@ func Test_UpdateOrganization(t *testing.T) {
 		require.NoError(t, err, "unexpected error fetching the db from the tx handler")
 		require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
 
-		updateData := testCase.mutations(t, db)
+		updateData := testCase.mutations(t, db, testCase.argsMutations)
 
-		_, err = m.UpdateOrganization(testCtx, txHandlerDb, &updateData)
+		_, err = m.UpdateOrganization(testCtx, txHandlerDb, updateData)
 		testCase.assertions(t, db, updateData.Id, err)
 	}
 }
@@ -600,22 +649,22 @@ func Test_AddOrganization(t *testing.T) {
 	}
 }
 
-type argsMutationsUpdateOrganization struct {
+type argsMutationsRestoreOrganization struct {
 	Organization mysqlmodel.Organization
 }
 
 type testCaseRestoreOrganization struct {
 	name          string
-	argsMutations *argsMutationsUpdateOrganization
+	argsMutations *argsMutationsRestoreOrganization
 	assertions    func(t *testing.T, db *sqlx.DB, id int, err error)
-	mutations     func(t *testing.T, db *sqlx.DB, args *argsMutationsUpdateOrganization) (id int)
+	mutations     func(t *testing.T, db *sqlx.DB, args *argsMutationsRestoreOrganization) (id int)
 }
 
 func getRestoreOrganizationTestCases() []testCaseRestoreOrganization {
 	return []testCaseRestoreOrganization{
 		{
 			name: "success",
-			argsMutations: &argsMutationsUpdateOrganization{
+			argsMutations: &argsMutationsRestoreOrganization{
 				Organization: mysqlmodel.Organization{
 					ID:       1,
 					Name:     "Organization A",
@@ -628,7 +677,7 @@ func getRestoreOrganizationTestCases() []testCaseRestoreOrganization {
 				require.NoError(t, err, "unexpected error fetching the organization")
 				assert.Equal(t, true, entry.IsActive)
 			},
-			mutations: func(t *testing.T, db *sqlx.DB, args *argsMutationsUpdateOrganization) (id int) {
+			mutations: func(t *testing.T, db *sqlx.DB, args *argsMutationsRestoreOrganization) (id int) {
 				err := args.Organization.Insert(context.TODO(), db, boil.Infer())
 				require.NoError(t, err, "unexpected insert error")
 
@@ -637,7 +686,7 @@ func getRestoreOrganizationTestCases() []testCaseRestoreOrganization {
 		},
 		{
 			name: "fail-missing-entry-to-update",
-			argsMutations: &argsMutationsUpdateOrganization{
+			argsMutations: &argsMutationsRestoreOrganization{
 				Organization: mysqlmodel.Organization{
 					ID:       1,
 					Name:     "Non-existent Organization",
@@ -648,7 +697,7 @@ func getRestoreOrganizationTestCases() []testCaseRestoreOrganization {
 				_, fetchErr := mysqlmodel.FindOrganization(context.TODO(), db, id)
 				assert.Error(t, fetchErr, "organization should not exist")
 			},
-			mutations: func(t *testing.T, db *sqlx.DB, args *argsMutationsUpdateOrganization) (id int) {
+			mutations: func(t *testing.T, db *sqlx.DB, args *argsMutationsRestoreOrganization) (id int) {
 				return args.Organization.ID
 			},
 		},
