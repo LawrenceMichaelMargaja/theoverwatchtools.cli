@@ -2,8 +2,11 @@ package model
 
 import (
 	"fmt"
+	"github.com/dembygenesis/local.tools/internal/sysconsts"
 	"github.com/dembygenesis/local.tools/internal/utilities/validationutils"
+	"github.com/friendsofgo/errors"
 	"github.com/volatiletech/null/v8"
+	"strings"
 	"time"
 )
 
@@ -12,6 +15,26 @@ type UpdateCapturePage struct {
 	Name             null.String `json:"name"`
 	UserId           null.Int    `json:"userId"`
 	CapturePageSetId int         `json:"capture_page_set_id"`
+}
+
+func (c *UpdateCapturePage) Validate() error {
+	if err := validationutils.Validate(c); err != nil {
+		return fmt.Errorf("validate: %w", err)
+	}
+
+	hasAtLeastOneUpdateParameters := false
+
+	if c.Name.Valid {
+		if c.Name.Valid && strings.TrimSpace(c.Name.String) != "" {
+			hasAtLeastOneUpdateParameters = true
+		}
+	}
+
+	if !hasAtLeastOneUpdateParameters {
+		return errors.New(sysconsts.ErrHasNotASingleValidateUpdateParameter)
+	}
+
+	return nil
 }
 
 type CreateCapturePage struct {
@@ -48,6 +71,14 @@ type CapturePageFilters struct {
 	CreatedBy              null.Int  `query:"created_by" json:"created_by"`
 	LastUpdatedBy          null.Int  `query:"last_updated_by" json:"last_updated_by"`
 	PaginationQueryFilters `swaggerignore:"true"`
+}
+
+type DeleteCapturePage struct {
+	ID int `json:"id" validate:"required,greater_than_zero"`
+}
+
+type RestoreCapturePage struct {
+	ID int `json:"id" validate:"required,greater_than_zero"`
 }
 
 func (c *CreateCapturePage) Validate() error {
