@@ -112,7 +112,6 @@ func getGetCapturePagesTestCases() []testCaseGetCapturePages {
 
 				err = args.User.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting into the capture_page db")
-
 			},
 			assertions: func(t *testing.T, paginated *model.PaginatedCapturePages, err error) {
 				require.NoError(t, err, "unexpected get capture page error")
@@ -233,20 +232,7 @@ func getTestCasesUpdateCapturePage() []testCaseUpdateCapturePage {
 		},
 		{
 			name: "fail-mock",
-			args: &argsUpdateCapturePage{
-				User: mysqlmodel.CapturePage{
-					ID:               1,
-					Name:             "Demby",
-					CreatedBy:        null.IntFrom(1),
-					LastUpdatedBy:    null.IntFrom(1),
-					CapturePageSetID: 1,
-				},
-				UpdateCapturePage: &model.UpdateCapturePage{
-					Id:     1,
-					Name:   null.StringFrom("Younes"),
-					UserId: null.IntFrom(1),
-				},
-			},
+			args: &argsUpdateCapturePage{},
 			getDependencies: func(t *testing.T) (*dependencies, func(ignoreErrors ...bool)) {
 				cleanup := func(ignoreErrors ...bool) {}
 
@@ -260,29 +246,15 @@ func getTestCasesUpdateCapturePage() []testCaseUpdateCapturePage {
 					Cleanup:    cleanup,
 				}, cleanup
 			},
-			mutations: func(t *testing.T, db *sqlx.DB, args *argsUpdateCapturePage) {
-			},
+			mutations: func(t *testing.T, db *sqlx.DB, args *argsUpdateCapturePage) {},
 			assertions: func(t *testing.T, params *model.UpdateCapturePage, capturePage *model.CapturePage, err error) {
 				assert.Error(t, err, "unexpected error")
 				assert.Nil(t, capturePage, "unexpected nil capture page")
 			},
 		},
 		{
-			name: "fail-internal-server-error",
-			args: &argsUpdateCapturePage{
-				User: mysqlmodel.CapturePage{
-					ID:               1,
-					Name:             "Demby",
-					CreatedBy:        null.IntFrom(1),
-					LastUpdatedBy:    null.IntFrom(1),
-					CapturePageSetID: 1,
-				},
-				UpdateCapturePage: &model.UpdateCapturePage{
-					Id:     1,
-					Name:   null.StringFrom("Younes"),
-					UserId: null.IntFrom(1),
-				},
-			},
+			name:            "fail-internal-server-error",
+			args:            &argsUpdateCapturePage{},
 			getDependencies: getConcreteDependencies,
 			mutations: func(t *testing.T, db *sqlx.DB, args *argsUpdateCapturePage) {
 				testhelper.DropTable(t, db, mysqlmodel.TableNames.CapturePage)
@@ -601,7 +573,6 @@ func getTestCasesRestoreCapturePage() []testCaseRestoreCapturePage {
 				},
 			},
 			mutations: func(t *testing.T, db *sqlx.DB, args *argsRestoreCapturePage) {
-
 				err := args.CapturePageSet.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting in the capture_page_set db")
 
