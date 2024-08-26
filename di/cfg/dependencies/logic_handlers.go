@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/dembygenesis/local.tools/internal/config"
 	"github.com/dembygenesis/local.tools/internal/logic_handlers/authlogic"
+	"github.com/dembygenesis/local.tools/internal/logic_handlers/capturepagelogic"
 	"github.com/dembygenesis/local.tools/internal/logic_handlers/categorylogic"
 	"github.com/dembygenesis/local.tools/internal/logic_handlers/marketinglogic"
 	"github.com/dembygenesis/local.tools/internal/logic_handlers/organizationlogic"
@@ -20,11 +21,30 @@ const (
 	logicAuth         = "logic_auth"
 	logicMarketing    = "logic_marketing"
 	logicOrganization = "logic_organization"
+	logicCapturePage  = "logic_capture_page"
 )
 
 func GetLogicHandlers() []dingo.Def {
 	return []dingo.Def{
 		{
+			Name: logicCapturePage,
+			Build: func(
+				cfg *config.App,
+				logger *logrus.Entry,
+				txProvider *mysqlconn.Provider,
+				store *mysqlstore.Repository,
+			) (*capturepagelogic.Service, error) {
+				logic, err := capturepagelogic.New(&capturepagelogic.Config{
+					TxProvider: txProvider,
+					Logger:     logger,
+					Persistor:  store,
+				})
+				if err != nil {
+					return nil, fmt.Errorf("logiccapturepage: %w", err)
+				}
+				return logic, nil
+			},
+		}, {
 			Name: logicOrganization,
 			Build: func(
 				cfg *config.App,

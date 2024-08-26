@@ -24,3 +24,12 @@ type organizationService interface {
 	CreateOrganization(ctx context.Context, organization *model.CreateOrganization) (*model.Organization, error)
 	RestoreOrganization(ctx context.Context, params *model.RestoreOrganization) error
 }
+
+//counterfeiter:generate . capturePageService
+type capturePageService interface {
+	ListCapturePages(ctx context.Context, filters *model.CapturePageFilters) (*model.PaginatedCapturePages, error)
+	DeleteCapturePage(ctx context.Context, params *model.DeleteCapturePage) error
+	UpdateCapturePage(ctx context.Context, capturePage *model.UpdateCapturePage) (*model.CapturePage, error)
+	CreateCapturePage(ctx context.Context, capturePage *model.CreateCapturePage) (*model.CapturePage, error)
+	RestoreCapturePage(ctx context.Context, params *model.RestoreCapturePage) error
+}

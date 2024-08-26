@@ -1,6 +1,7 @@
 package testassets
 
 import (
+	"github.com/dembygenesis/local.tools/internal/logic_handlers/capturepagelogic"
 	"github.com/dembygenesis/local.tools/internal/logic_handlers/categorylogic"
 	"github.com/dembygenesis/local.tools/internal/logic_handlers/organizationlogic"
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqlconn"
@@ -10,6 +11,7 @@ import (
 type Container struct {
 	CategoryService     *categorylogic.Service
 	OrganizationService *organizationlogic.Service
+	CapturePageService  *capturepagelogic.Service
 	MySQLStore          *mysqlstore.Repository
 	ConnProvider        *mysqlconn.Provider
 }

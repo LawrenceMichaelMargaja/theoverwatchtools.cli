@@ -34,12 +34,18 @@ func main() {
 		log.Fatalf("organiation mgr: %v", err)
 	}
 
+	capturePageMgr, err := ctn.SafeGetLogicCapturePage()
+	if err != nil {
+		log.Fatalf("capture page mgr: %v", err)
+	}
+
 	apiCfg := &api.Config{
 		BaseUrl:             cfg.API.BaseUrl,
 		Logger:              _logger,
 		Port:                cfg.API.Port,
 		CategoryService:     categoryMgr,
 		OrganizationService: organizationMgr,
+		CapturePageService:  capturePageMgr,
 	}
 
 	_api, err := api.New(apiCfg)

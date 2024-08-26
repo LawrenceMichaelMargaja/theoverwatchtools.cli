@@ -51,10 +51,18 @@ func (a *Api) Routes() error {
 	// Organization
 	groupOrganization := v1.Group("/organization")
 	groupOrganization.Name("List Organizations").Get("", a.ListOrganizations)
-	groupOrganization.Name("Delete Organization").Delete("/:id", a.DeleteOrganization)
-	groupOrganization.Name("Update Organization").Patch("", a.UpdateOrganization)
 	groupOrganization.Name("Create Organization").Post("", a.CreateOrganization)
+	groupOrganization.Name("Update Organization").Patch("", a.UpdateOrganization)
+	groupOrganization.Name("Delete Organization").Delete("/:id", a.DeleteOrganization)
 	groupOrganization.Name("Restore Organization").Patch("/:id", a.RestoreOrganization)
+
+	// Capture Page
+	groupCapturePage := v1.Group("/capturepage")
+	groupCapturePage.Name("List Capture Page").Get("", a.ListCapturePages)
+	groupCapturePage.Name("Create Capture Page").Post("", a.CreateCapturePage)
+	groupCapturePage.Name("Update Capture Page").Patch("", a.UpdateCapturePage)
+	groupCapturePage.Name("Delete Capture Page").Delete("/:id", a.DeleteCapturePage)
+	groupCapturePage.Name("Restore Capture Page").Patch("/:id", a.RestoreCapturePage)
 
 	// Docs
 	if err := a.loadStaticRoutes(); err != nil {
