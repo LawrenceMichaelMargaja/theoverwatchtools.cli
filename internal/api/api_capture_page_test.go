@@ -48,41 +48,41 @@ func getTestCasesCreateCapturePage() []testCaseCreateCapturePage {
 			},
 			args: &argsCreateCapturePage{
 				User: mysqlmodel.User{
-					ID:                4,
-					CreatedBy:         null.IntFrom(1),
-					LastUpdatedBy:     null.IntFrom(1),
+					ID:                33,
 					Firstname:         "Demby",
 					Lastname:          "Abella",
 					CategoryTypeRefID: 1,
+					OrganizationRefID: null.IntFrom(22),
 				},
 				Organization: mysqlmodel.Organization{
-					ID:            1,
+					ID:            22,
 					Name:          "test",
-					CreatedBy:     null.IntFrom(4),
-					LastUpdatedBy: null.IntFrom(4),
+					CreatedBy:     null.IntFrom(33),
+					LastUpdatedBy: null.IntFrom(33),
 				},
 				CapturePageSet: mysqlmodel.CapturePageSet{
-					ID:                1,
+					ID:                9,
 					Name:              "lawrence",
-					CreatedBy:         null.IntFrom(1),
-					LastUpdatedBy:     null.IntFrom(1),
-					OrganizationRefID: null.IntFrom(1),
+					CreatedBy:         null.IntFrom(33),
+					LastUpdatedBy:     null.IntFrom(33),
+					OrganizationRefID: null.IntFrom(22),
 				},
 				CapturePage: mysqlmodel.CapturePage{
-					ID:            1,
-					Name:          "Mohamed",
-					CreatedBy:     null.IntFrom(1),
-					LastUpdatedBy: null.IntFrom(1),
+					ID:               1,
+					Name:             "Mohamed",
+					CreatedBy:        null.IntFrom(33),
+					LastUpdatedBy:    null.IntFrom(33),
+					CapturePageSetID: 9,
 				},
 				CreateCapturePage: &model.CreateCapturePage{
 					Name:             "younes",
-					UserId:           null.IntFrom(4).Int,
-					CapturePageSetId: 1,
+					UserId:           null.IntFrom(33).Int,
+					CapturePageSetId: 9,
 				},
 			},
 			mutations: func(t *testing.T, db *sqlx.DB, modules *testassets.Container, args *argsCreateCapturePage) {
 				err := args.User.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting in the user db")
+				require.NoError(t, err)
 
 				err = args.Organization.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting in the organization db")
