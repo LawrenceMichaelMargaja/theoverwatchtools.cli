@@ -34,6 +34,14 @@ func New(cfg *Config) (*Service, error) {
 	return &Service{cfg}, nil
 }
 
+func (i *Service) GetCapturePageSetById(ctx context.Context, handler persistence.TransactionHandler, id int) error {
+	_, err := i.cfg.Persistor.GetCapturePageSetById(ctx, handler, id)
+	if err != nil {
+		return fmt.Errorf("invalid capture_page_set_id: %v", err)
+	}
+	return nil
+}
+
 func (i *Service) CreateCapturePage(ctx context.Context, params *model.CreateCapturePage) (*model.CapturePage, error) {
 	if err := params.Validate(); err != nil {
 		return nil, errs.New(&errs.Cfg{
@@ -52,6 +60,14 @@ func (i *Service) CreateCapturePage(ctx context.Context, params *model.CreateCap
 	defer tx.Rollback(ctx)
 
 	capturePage := params.ToCapturePage()
+
+	_, err = i.cfg.Persistor.GetCapturePageSetById(ctx, tx, capturePage.CapturePageSetId)
+	if err != nil {
+		return nil, errs.New(&errs.Cfg{
+			StatusCode: http.StatusBadRequest,
+			Err:        fmt.Errorf("invalid capture_page_set_id: %v", err),
+		})
+	}
 
 	exists, err := i.cfg.Persistor.GetCapturePageByName(ctx, tx, capturePage.Name)
 	if err != nil {

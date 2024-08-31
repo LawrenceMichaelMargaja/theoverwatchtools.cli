@@ -12,6 +12,7 @@ import (
 type persistor interface {
 	GetCapturePages(ctx context.Context, tx persistence.TransactionHandler, filters *model.CapturePageFilters) (*model.PaginatedCapturePages, error)
 	CreateCapturePage(ctx context.Context, tx persistence.TransactionHandler, capturePage *model.CapturePage) (*model.CapturePage, error)
+	GetCapturePageSetById(ctx context.Context, tx persistence.TransactionHandler, id int) (*model.CapturePageSet, error)
 	AddCapturePage(ctx context.Context, tx persistence.TransactionHandler, capturePage *model.CreateCapturePage) (*model.CapturePage, error)
 	GetCapturePageByName(ctx context.Context, tx persistence.TransactionHandler, name string) (*model.CapturePage, error)
 	UpdateCapturePage(ctx context.Context, tx persistence.TransactionHandler, params *model.UpdateCapturePage) (*model.CapturePage, error)

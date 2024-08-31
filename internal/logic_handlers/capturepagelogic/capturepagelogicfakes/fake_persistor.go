@@ -68,6 +68,21 @@ type FakePersistor struct {
 		result1 *model.CapturePage
 		result2 error
 	}
+	GetCapturePageSetByIdStub        func(context.Context, persistence.TransactionHandler, int) (*model.CapturePageSet, error)
+	getCapturePageSetByIdMutex       sync.RWMutex
+	getCapturePageSetByIdArgsForCall []struct {
+		arg1 context.Context
+		arg2 persistence.TransactionHandler
+		arg3 int
+	}
+	getCapturePageSetByIdReturns struct {
+		result1 *model.CapturePageSet
+		result2 error
+	}
+	getCapturePageSetByIdReturnsOnCall map[int]struct {
+		result1 *model.CapturePageSet
+		result2 error
+	}
 	GetCapturePagesStub        func(context.Context, persistence.TransactionHandler, *model.CapturePageFilters) (*model.PaginatedCapturePages, error)
 	getCapturePagesMutex       sync.RWMutex
 	getCapturePagesArgsForCall []struct {
@@ -376,6 +391,72 @@ func (fake *FakePersistor) GetCapturePageByNameReturnsOnCall(i int, result1 *mod
 	}{result1, result2}
 }
 
+func (fake *FakePersistor) GetCapturePageSetById(arg1 context.Context, arg2 persistence.TransactionHandler, arg3 int) (*model.CapturePageSet, error) {
+	fake.getCapturePageSetByIdMutex.Lock()
+	ret, specificReturn := fake.getCapturePageSetByIdReturnsOnCall[len(fake.getCapturePageSetByIdArgsForCall)]
+	fake.getCapturePageSetByIdArgsForCall = append(fake.getCapturePageSetByIdArgsForCall, struct {
+		arg1 context.Context
+		arg2 persistence.TransactionHandler
+		arg3 int
+	}{arg1, arg2, arg3})
+	stub := fake.GetCapturePageSetByIdStub
+	fakeReturns := fake.getCapturePageSetByIdReturns
+	fake.recordInvocation("GetCapturePageSetById", []interface{}{arg1, arg2, arg3})
+	fake.getCapturePageSetByIdMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakePersistor) GetCapturePageSetByIdCallCount() int {
+	fake.getCapturePageSetByIdMutex.RLock()
+	defer fake.getCapturePageSetByIdMutex.RUnlock()
+	return len(fake.getCapturePageSetByIdArgsForCall)
+}
+
+func (fake *FakePersistor) GetCapturePageSetByIdCalls(stub func(context.Context, persistence.TransactionHandler, int) (*model.CapturePageSet, error)) {
+	fake.getCapturePageSetByIdMutex.Lock()
+	defer fake.getCapturePageSetByIdMutex.Unlock()
+	fake.GetCapturePageSetByIdStub = stub
+}
+
+func (fake *FakePersistor) GetCapturePageSetByIdArgsForCall(i int) (context.Context, persistence.TransactionHandler, int) {
+	fake.getCapturePageSetByIdMutex.RLock()
+	defer fake.getCapturePageSetByIdMutex.RUnlock()
+	argsForCall := fake.getCapturePageSetByIdArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakePersistor) GetCapturePageSetByIdReturns(result1 *model.CapturePageSet, result2 error) {
+	fake.getCapturePageSetByIdMutex.Lock()
+	defer fake.getCapturePageSetByIdMutex.Unlock()
+	fake.GetCapturePageSetByIdStub = nil
+	fake.getCapturePageSetByIdReturns = struct {
+		result1 *model.CapturePageSet
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakePersistor) GetCapturePageSetByIdReturnsOnCall(i int, result1 *model.CapturePageSet, result2 error) {
+	fake.getCapturePageSetByIdMutex.Lock()
+	defer fake.getCapturePageSetByIdMutex.Unlock()
+	fake.GetCapturePageSetByIdStub = nil
+	if fake.getCapturePageSetByIdReturnsOnCall == nil {
+		fake.getCapturePageSetByIdReturnsOnCall = make(map[int]struct {
+			result1 *model.CapturePageSet
+			result2 error
+		})
+	}
+	fake.getCapturePageSetByIdReturnsOnCall[i] = struct {
+		result1 *model.CapturePageSet
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakePersistor) GetCapturePages(arg1 context.Context, arg2 persistence.TransactionHandler, arg3 *model.CapturePageFilters) (*model.PaginatedCapturePages, error) {
 	fake.getCapturePagesMutex.Lock()
 	ret, specificReturn := fake.getCapturePagesReturnsOnCall[len(fake.getCapturePagesArgsForCall)]
@@ -582,6 +663,8 @@ func (fake *FakePersistor) Invocations() map[string][][]interface{} {
 	defer fake.deleteCapturePageMutex.RUnlock()
 	fake.getCapturePageByNameMutex.RLock()
 	defer fake.getCapturePageByNameMutex.RUnlock()
+	fake.getCapturePageSetByIdMutex.RLock()
+	defer fake.getCapturePageSetByIdMutex.RUnlock()
 	fake.getCapturePagesMutex.RLock()
 	defer fake.getCapturePagesMutex.RUnlock()
 	fake.restoreCapturePageMutex.RLock()

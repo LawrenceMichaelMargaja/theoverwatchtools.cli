@@ -59,6 +59,13 @@ type CapturePage struct {
 	IsActive         bool      `json:"is_active" boil:"is_active"`
 }
 
+type CapturePageSet struct {
+	Id   int    `json:"id" boil:"id"`
+	Name string `json:"name" validate:"required" boil:"name"`
+}
+
+type CapturePages []CapturePage
+
 type PaginatedCapturePages struct {
 	CapturePages []CapturePage `json:"capture_pages"`
 	Pagination   *Pagination   `json:"pagination"`
