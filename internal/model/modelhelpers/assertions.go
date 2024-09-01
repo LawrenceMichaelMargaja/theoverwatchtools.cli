@@ -29,3 +29,11 @@ func AssertNonEmptyCapturePages(t *testing.T, capturepages []model.CapturePage) 
 		assert.NotEmpty(t, capturepage.CreatedBy, "unexpected empty capture page created_by")
 	}
 }
+
+func AssertNonEmptyClickTrackers(t *testing.T, clicktrackers []model.ClickTracker) {
+	for _, clicktracker := range clicktrackers {
+		assert.NotEmpty(t, clicktracker.Id, "unexpected empty click tracker page id")
+		assert.NotEmpty(t, clicktracker.Name, "unexpected empty click tracker name")
+		assert.NotEmpty(t, clicktracker.CreatedBy, "unexpected empty click tracker created_by")
+	}
+}
