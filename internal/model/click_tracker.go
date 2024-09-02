@@ -2,15 +2,51 @@ package model
 
 import (
 	"fmt"
+	"github.com/dembygenesis/local.tools/internal/sysconsts"
 	"github.com/dembygenesis/local.tools/internal/utilities/validationutils"
+	"github.com/friendsofgo/errors"
 	"github.com/volatiletech/null/v8"
+	"strings"
 	"time"
 )
+
+type UpdateClickTracker struct {
+	Id     int         `json:"id" validate:"required,greater_than_zero"`
+	Name   null.String `json:"name"`
+	UserId null.Int    `json:"userId"`
+}
+
+func (c *UpdateClickTracker) Validate() error {
+	if err := validationutils.Validate(c); err != nil {
+		return fmt.Errorf("validate: %w", err)
+	}
+
+	hasAtLeastOneUpdateParameters := false
+
+	if c.Name.Valid {
+		if c.Name.Valid && strings.TrimSpace(c.Name.String) != "" {
+			hasAtLeastOneUpdateParameters = true
+		}
+	}
+
+	if !hasAtLeastOneUpdateParameters {
+		return errors.New(sysconsts.ErrHasNotASingleValidateUpdateParameter)
+	}
+
+	return nil
+}
 
 type CreateClickTracker struct {
 	Name              string `json:"name" validate:"required"`
 	UserId            int    `json:"user_id"`
 	ClickTrackerSetId int    `json:"click_tracker_set_id"`
+}
+
+func (c *CreateClickTracker) Validate() error {
+	if err := validationutils.Validate(c); err != nil {
+		return fmt.Errorf("validate: %v", err)
+	}
+	return nil
 }
 
 type ClickTracker struct {

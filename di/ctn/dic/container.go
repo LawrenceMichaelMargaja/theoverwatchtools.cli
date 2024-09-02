@@ -15,6 +15,7 @@ import (
 	authlogic "github.com/dembygenesis/local.tools/internal/logic_handlers/authlogic"
 	capturepagelogic "github.com/dembygenesis/local.tools/internal/logic_handlers/capturepagelogic"
 	categorylogic "github.com/dembygenesis/local.tools/internal/logic_handlers/categorylogic"
+	clicktrackerlogic "github.com/dembygenesis/local.tools/internal/logic_handlers/clicktrackerlogic"
 	marketinglogic "github.com/dembygenesis/local.tools/internal/logic_handlers/marketinglogic"
 	organizationlogic "github.com/dembygenesis/local.tools/internal/logic_handlers/organizationlogic"
 	userlogic "github.com/dembygenesis/local.tools/internal/logic_handlers/userlogic"
@@ -1040,6 +1041,151 @@ func (c *Container) UnscopedGetLogicCategory() *categorylogic.Service {
 // If the container can not be retrieved, it panics.
 func LogicCategory(i interface{}) *categorylogic.Service {
 	return C(i).GetLogicCategory()
+}
+
+// SafeGetLogicClickTracker retrieves the "logic_click_tracker" object from the main scope.
+//
+// ---------------------------------------------
+//
+//	name: "logic_click_tracker"
+//	type: *clicktrackerlogic.Service
+//	scope: "main"
+//	build: func
+//	params:
+//		- "0": Service(*config.App) ["config_layer"]
+//		- "1": Service(*logrus.Entry) ["logger_logrus"]
+//		- "2": Service(*mysqlconn.Provider) ["tx_provider"]
+//		- "3": Service(*mysqlstore.Repository) ["persistence_mysql"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// If the object can not be retrieved, it returns an error.
+func (c *Container) SafeGetLogicClickTracker() (*clicktrackerlogic.Service, error) {
+	i, err := c.ctn.SafeGet("logic_click_tracker")
+	if err != nil {
+		var eo *clicktrackerlogic.Service
+		return eo, err
+	}
+	o, ok := i.(*clicktrackerlogic.Service)
+	if !ok {
+		return o, errors.New("could get 'logic_click_tracker' because the object could not be cast to *clicktrackerlogic.Service")
+	}
+	return o, nil
+}
+
+// GetLogicClickTracker retrieves the "logic_click_tracker" object from the main scope.
+//
+// ---------------------------------------------
+//
+//	name: "logic_click_tracker"
+//	type: *clicktrackerlogic.Service
+//	scope: "main"
+//	build: func
+//	params:
+//		- "0": Service(*config.App) ["config_layer"]
+//		- "1": Service(*logrus.Entry) ["logger_logrus"]
+//		- "2": Service(*mysqlconn.Provider) ["tx_provider"]
+//		- "3": Service(*mysqlstore.Repository) ["persistence_mysql"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// If the object can not be retrieved, it panics.
+func (c *Container) GetLogicClickTracker() *clicktrackerlogic.Service {
+	o, err := c.SafeGetLogicClickTracker()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// UnscopedSafeGetLogicClickTracker retrieves the "logic_click_tracker" object from the main scope.
+//
+// ---------------------------------------------
+//
+//	name: "logic_click_tracker"
+//	type: *clicktrackerlogic.Service
+//	scope: "main"
+//	build: func
+//	params:
+//		- "0": Service(*config.App) ["config_layer"]
+//		- "1": Service(*logrus.Entry) ["logger_logrus"]
+//		- "2": Service(*mysqlconn.Provider) ["tx_provider"]
+//		- "3": Service(*mysqlstore.Repository) ["persistence_mysql"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// This method can be called even if main is a sub-scope of the container.
+// If the object can not be retrieved, it returns an error.
+func (c *Container) UnscopedSafeGetLogicClickTracker() (*clicktrackerlogic.Service, error) {
+	i, err := c.ctn.UnscopedSafeGet("logic_click_tracker")
+	if err != nil {
+		var eo *clicktrackerlogic.Service
+		return eo, err
+	}
+	o, ok := i.(*clicktrackerlogic.Service)
+	if !ok {
+		return o, errors.New("could get 'logic_click_tracker' because the object could not be cast to *clicktrackerlogic.Service")
+	}
+	return o, nil
+}
+
+// UnscopedGetLogicClickTracker retrieves the "logic_click_tracker" object from the main scope.
+//
+// ---------------------------------------------
+//
+//	name: "logic_click_tracker"
+//	type: *clicktrackerlogic.Service
+//	scope: "main"
+//	build: func
+//	params:
+//		- "0": Service(*config.App) ["config_layer"]
+//		- "1": Service(*logrus.Entry) ["logger_logrus"]
+//		- "2": Service(*mysqlconn.Provider) ["tx_provider"]
+//		- "3": Service(*mysqlstore.Repository) ["persistence_mysql"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// This method can be called even if main is a sub-scope of the container.
+// If the object can not be retrieved, it panics.
+func (c *Container) UnscopedGetLogicClickTracker() *clicktrackerlogic.Service {
+	o, err := c.UnscopedSafeGetLogicClickTracker()
+	if err != nil {
+		panic(err)
+	}
+	return o
+}
+
+// LogicClickTracker retrieves the "logic_click_tracker" object from the main scope.
+//
+// ---------------------------------------------
+//
+//	name: "logic_click_tracker"
+//	type: *clicktrackerlogic.Service
+//	scope: "main"
+//	build: func
+//	params:
+//		- "0": Service(*config.App) ["config_layer"]
+//		- "1": Service(*logrus.Entry) ["logger_logrus"]
+//		- "2": Service(*mysqlconn.Provider) ["tx_provider"]
+//		- "3": Service(*mysqlstore.Repository) ["persistence_mysql"]
+//	unshared: false
+//	close: false
+//
+// ---------------------------------------------
+//
+// It tries to find the container with the C method and the given interface.
+// If the container can be retrieved, it calls the GetLogicClickTracker method.
+// If the container can not be retrieved, it panics.
+func LogicClickTracker(i interface{}) *clicktrackerlogic.Service {
+	return C(i).GetLogicClickTracker()
 }
 
 // SafeGetLogicMarketing retrieves the "logic_marketing" object from the main scope.
