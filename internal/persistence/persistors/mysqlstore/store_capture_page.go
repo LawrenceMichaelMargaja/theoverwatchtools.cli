@@ -270,10 +270,14 @@ func (m *Repository) CreateCapturePage(ctx context.Context, tx persistence.Trans
 
 	createdBY, _ := strconv.Atoi(capturePage.CreatedBy)
 	lastUpdateBY, _ := strconv.Atoi(capturePage.LastUpdatedBy)
+
+	fmt.Println("the CapturePage ----- ", strutil.GetAsJson(capturePage))
+
 	entry := mysqlmodel.CapturePage{
-		Name:          capturePage.Name,
-		CreatedBy:     null.IntFrom(createdBY),
-		LastUpdatedBy: null.IntFrom(lastUpdateBY),
+		Name:             capturePage.Name,
+		CreatedBy:        null.IntFrom(createdBY),
+		LastUpdatedBy:    null.IntFrom(lastUpdateBY),
+		CapturePageSetID: capturePage.CapturePageSetId,
 	}
 	if err = entry.Insert(ctx, ctxExec, boil.Infer()); err != nil {
 		return nil, fmt.Errorf("insert capture page: %w", err)

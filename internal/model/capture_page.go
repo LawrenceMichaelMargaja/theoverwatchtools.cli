@@ -90,8 +90,10 @@ func (c *CreateCapturePage) Validate() error {
 
 func (c *CreateCapturePage) ToCapturePage() *CapturePage {
 	capturePage := &CapturePage{
-		Name:      c.Name,
-		CreatedBy: fmt.Sprint(c.UserId),
+		Name:             c.Name,
+		CreatedBy:        fmt.Sprint(c.UserId),
+		LastUpdatedBy:    fmt.Sprint(c.UserId),
+		CapturePageSetId: c.CapturePageSetId,
 	}
 	return capturePage
 }

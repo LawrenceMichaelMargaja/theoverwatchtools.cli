@@ -12,15 +12,13 @@ import (
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqlhelper"
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/require"
-	"github.com/volatiletech/null/v8"
-	"github.com/volatiletech/sqlboiler/v4/boil"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
 
-type argsCreateCapturePage struct {
+type argsAddCapturePage struct {
 	User              mysqlmodel.User
 	CapturePage       mysqlmodel.CapturePage
 	CapturePageSet    mysqlmodel.CapturePageSet
@@ -28,16 +26,16 @@ type argsCreateCapturePage struct {
 	CreateCapturePage *model.CreateCapturePage
 }
 
-type testCaseCreateCapturePage struct {
+type testCaseAddCapturePage struct {
 	name              string
 	fnGetTestServices func(t *testing.T) (*testassets.Container, func())
-	args              *argsCreateCapturePage
-	mutations         func(t *testing.T, db *sqlx.DB, modules *testassets.Container, args *argsCreateCapturePage)
+	args              *argsAddCapturePage
+	mutations         func(t *testing.T, db *sqlx.DB, modules *testassets.Container, args *argsAddCapturePage)
 	assertions        func(t *testing.T, resp []byte, respCode int)
 }
 
-func getTestCasesCreateCapturePage() []testCaseCreateCapturePage {
-	return []testCaseCreateCapturePage{
+func getTestCasesAddCapturePage() []testCaseAddCapturePage {
+	return []testCaseAddCapturePage{
 		{
 			name: "success",
 			fnGetTestServices: func(t *testing.T) (*testassets.Container, func()) {
@@ -46,53 +44,14 @@ func getTestCasesCreateCapturePage() []testCaseCreateCapturePage {
 					cleanup()
 				}
 			},
-			args: &argsCreateCapturePage{
-				User: mysqlmodel.User{
-					ID:                4,
-					CreatedBy:         null.IntFrom(1),
-					LastUpdatedBy:     null.IntFrom(1),
-					Firstname:         "Demby",
-					Lastname:          "Abella",
-					CategoryTypeRefID: 1,
-				},
-				Organization: mysqlmodel.Organization{
-					ID:            1,
-					Name:          "test",
-					CreatedBy:     null.IntFrom(4),
-					LastUpdatedBy: null.IntFrom(4),
-				},
-				CapturePageSet: mysqlmodel.CapturePageSet{
-					ID:                1,
-					Name:              "lawrence",
-					CreatedBy:         null.IntFrom(1),
-					LastUpdatedBy:     null.IntFrom(1),
-					OrganizationRefID: null.IntFrom(1),
-				},
-				CapturePage: mysqlmodel.CapturePage{
-					ID:            1,
-					Name:          "Mohamed",
-					CreatedBy:     null.IntFrom(1),
-					LastUpdatedBy: null.IntFrom(1),
-				},
+			args: &argsAddCapturePage{
 				CreateCapturePage: &model.CreateCapturePage{
 					Name:             "younes",
-					UserId:           null.IntFrom(4).Int,
+					UserId:           1,
 					CapturePageSetId: 1,
 				},
 			},
-			mutations: func(t *testing.T, db *sqlx.DB, modules *testassets.Container, args *argsCreateCapturePage) {
-				err := args.User.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting in the user db")
-
-				err = args.Organization.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting in the organization db")
-
-				err = args.CapturePageSet.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting in the CapturePageSet db")
-
-				err = args.CapturePage.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting in the CapturePage db")
-			},
+			mutations: func(t *testing.T, db *sqlx.DB, modules *testassets.Container, args *argsAddCapturePage) {},
 			assertions: func(t *testing.T, resp []byte, respCode int) {
 				respStr := string(resp)
 				require.NotNilf(t, resp, "unexpected nil response: %s", respStr)
@@ -109,8 +68,8 @@ func getTestCasesCreateCapturePage() []testCaseCreateCapturePage {
 	}
 }
 
-func Test_CreateCapturePage(t *testing.T) {
-	for _, testCase := range getTestCasesCreateCapturePage() {
+func Test_AddCapturePage(t *testing.T) {
+	for _, testCase := range getTestCasesAddCapturePage() {
 		t.Run(testCase.name, func(t *testing.T) {
 			db, _, cleanup := mysqlhelper.TestGetMockMariaDB(t)
 			defer cleanup()
@@ -132,6 +91,9 @@ func Test_CreateCapturePage(t *testing.T) {
 			require.NoError(t, err, "unexpected error instantiating api")
 			require.NotNil(t, api, "unexpected api nil instance")
 
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
 			reqB, err := json.Marshal(testCase.args.CreateCapturePage)
 			require.NoError(t, err, "unexpected error marshalling parameters")
 
@@ -142,7 +104,7 @@ func Test_CreateCapturePage(t *testing.T) {
 				"Accept-Encoding": {"gzip", "deflate", "br"},
 			}
 
-			resp, err := api.app.Test(req, 100)
+			resp, err := api.app.Test(req.WithContext(ctx), 100)
 			require.NoError(t, err, "unexpected error executing test")
 
 			respBytes, err := io.ReadAll(resp.Body)
