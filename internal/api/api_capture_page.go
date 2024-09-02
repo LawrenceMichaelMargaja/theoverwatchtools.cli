@@ -36,6 +36,15 @@ func (a *Api) CreateCapturePage(ctx *fiber.Ctx) error {
 	return a.WriteResponse(ctx, http.StatusCreated, capturePage, err)
 }
 
+func (a *Api) AddCapturePage(ctx *fiber.Ctx) error {
+	var body model.CreateCapturePage
+	if err := ctx.BodyParser(&body); err != nil {
+		return ctx.Status(http.StatusBadRequest).JSON(errs.ToArr(err))
+	}
+	capturePage, err := a.cfg.CapturePageService.AddCapturePage(ctx.Context(), &body)
+	return a.WriteResponse(ctx, http.StatusCreated, capturePage, err)
+}
+
 func (a *Api) DeleteCapturePage(ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
 	capturePageId, err := strconv.Atoi(id)

@@ -7,6 +7,7 @@ import (
 	"github.com/dembygenesis/local.tools/internal/persistence"
 	"github.com/dembygenesis/local.tools/internal/sysconsts"
 	"github.com/dembygenesis/local.tools/internal/utilities/errs"
+	"github.com/dembygenesis/local.tools/internal/utilities/strutil"
 	"github.com/dembygenesis/local.tools/internal/utilities/validationutils"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -85,6 +86,8 @@ func (i *Service) CreateCapturePage(ctx context.Context, params *model.CreateCap
 		})
 	}
 
+	fmt.Println("the capture page params ---- ", strutil.GetAsJson(capturePage))
+
 	capturePageCreated, err := i.cfg.Persistor.CreateCapturePage(ctx, tx, capturePage)
 	if err != nil {
 		return nil, errs.New(&errs.Cfg{
@@ -125,7 +128,7 @@ func (i *Service) AddCapturePage(ctx context.Context, params *model.CreateCaptur
 		if !strings.Contains(err.Error(), sysconsts.ErrExpectedExactlyOneEntry) {
 			return nil, errs.New(&errs.Cfg{
 				StatusCode: http.StatusBadRequest,
-				Err:        fmt.Errorf("check capture page unique: %v", err),
+				Err:        fmt.Errorf("check capture page unique: %w", err),
 			})
 		}
 	}
@@ -136,7 +139,7 @@ func (i *Service) AddCapturePage(ctx context.Context, params *model.CreateCaptur
 		})
 	}
 
-	capturePage, err := i.cfg.Persistor.AddCapturePage(ctx, tx, params)
+	capturePageCreated, err := i.cfg.Persistor.AddCapturePage(ctx, tx, params)
 	if err != nil {
 		return nil, errs.New(&errs.Cfg{
 			StatusCode: http.StatusInternalServerError,
@@ -147,11 +150,11 @@ func (i *Service) AddCapturePage(ctx context.Context, params *model.CreateCaptur
 	if err = tx.Commit(ctx); err != nil {
 		return nil, errs.New(&errs.Cfg{
 			StatusCode: http.StatusInternalServerError,
-			Err:        fmt.Errorf("commit: %w", err),
+			Err:        fmt.Errorf("commit: %v", err),
 		})
 	}
 
-	return capturePage, nil
+	return capturePageCreated, nil
 }
 
 func (i *Service) ListCapturePages(

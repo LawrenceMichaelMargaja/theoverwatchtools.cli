@@ -31,5 +31,6 @@ type capturePageService interface {
 	DeleteCapturePage(ctx context.Context, params *model.DeleteCapturePage) error
 	UpdateCapturePage(ctx context.Context, capturePage *model.UpdateCapturePage) (*model.CapturePage, error)
 	CreateCapturePage(ctx context.Context, capturePage *model.CreateCapturePage) (*model.CapturePage, error)
+	AddCapturePage(ctx context.Context, capturePage *model.CreateCapturePage) (*model.CapturePage, error)
 	RestoreCapturePage(ctx context.Context, params *model.RestoreCapturePage) error
 }

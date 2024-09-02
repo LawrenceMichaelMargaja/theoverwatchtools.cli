@@ -59,7 +59,7 @@ func (a *Api) Routes() error {
 	// Capture Page
 	groupCapturePage := v1.Group("/capturepage")
 	groupCapturePage.Name("List Capture Page").Get("", a.ListCapturePages)
-	groupCapturePage.Name("Create Capture Page").Post("", a.CreateCapturePage)
+	groupCapturePage.Name("Create Capture Page").Post("", a.AddCapturePage)
 	groupCapturePage.Name("Update Capture Page").Patch("", a.UpdateCapturePage)
 	groupCapturePage.Name("Delete Capture Page").Delete("/:id", a.DeleteCapturePage)
 	groupCapturePage.Name("Restore Capture Page").Patch("/:id", a.RestoreCapturePage)
