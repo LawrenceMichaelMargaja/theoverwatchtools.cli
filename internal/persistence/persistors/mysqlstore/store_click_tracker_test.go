@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"strings"
 	"testing"
 	"time"
 )
@@ -285,9 +286,7 @@ func Test_GetClickTrackers(t *testing.T) {
 
 type argsCreateClickTracker struct {
 	User               mysqlmodel.User
-	Organization       mysqlmodel.Organization
 	ClickTrackerSet    mysqlmodel.ClickTrackerSet
-	ClickTracker       mysqlmodel.ClickTracker
 	CreateClickTracker *model.CreateClickTracker
 }
 
@@ -304,52 +303,31 @@ func getCreateClickTrackerTestCases() []testCaseCreateClickTracker {
 			name: "success",
 			args: &argsCreateClickTracker{
 				User: mysqlmodel.User{
-					ID:                5,
+					ID:                4,
 					Firstname:         "Demby",
 					Lastname:          "Abella",
 					Email:             "demby@test.com",
 					Password:          "password",
 					CategoryTypeRefID: 1,
 				},
-				Organization: mysqlmodel.Organization{
-					ID:            1,
-					Name:          "TEST",
-					CreatedBy:     null.IntFrom(1),
-					LastUpdatedBy: null.IntFrom(1),
-					CreatedAt:     time.Now(),
-					LastUpdatedAt: null.TimeFrom(time.Now()),
-					IsActive:      true,
-				},
 				ClickTrackerSet: mysqlmodel.ClickTrackerSet{
-					ID:             3,
-					CreatedBy:      null.IntFrom(5),
-					LastUpdatedBy:  null.IntFrom(5),
-					OrganizationID: 1,
-				},
-				ClickTracker: mysqlmodel.ClickTracker{
-					ID:                1,
-					Name:              "TEST",
-					CreatedBy:         null.IntFrom(5),
-					LastUpdatedBy:     null.IntFrom(5),
-					ClickTrackerSetID: 3,
+					Name:          "lawrence",
+					ID:            4,
+					CreatedBy:     null.IntFrom(4),
+					LastUpdatedBy: null.IntFrom(4),
 				},
 				CreateClickTracker: &model.CreateClickTracker{
-					Name:   "DembyYounesLawrence",
-					UserId: 4,
+					Name:              "younes",
+					UserId:            4,
+					ClickTrackerSetId: 4,
 				},
 			},
 			mutations: func(t *testing.T, db *sqlx.DB, args *argsCreateClickTracker) *model.CreateClickTracker {
 				err := args.User.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting in the user db")
 
-				err = args.Organization.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting in the click tracker set db")
-
 				err = args.ClickTrackerSet.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting in the click tracker set db")
-
-				err = args.ClickTracker.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting in the click tracker db")
 
 				return args.CreateClickTracker
 			},
@@ -358,6 +336,46 @@ func getCreateClickTrackerTestCases() []testCaseCreateClickTracker {
 				assert.NoError(t, err, "unexpected non-nil error")
 
 				modelhelpers.AssertNonEmptyClickTrackers(t, []model.ClickTracker{*clickTracker})
+			},
+		},
+		{
+			name: "fail-name-too-long",
+			args: &argsCreateClickTracker{
+				User: mysqlmodel.User{
+					ID:                4,
+					Firstname:         "Demby",
+					Lastname:          "Abella",
+					Email:             "demby@test.com",
+					Password:          "password",
+					CategoryTypeRefID: 1,
+				},
+				ClickTrackerSet: mysqlmodel.ClickTrackerSet{
+					Name:          "lawrence",
+					ID:            4,
+					CreatedBy:     null.IntFrom(4),
+					LastUpdatedBy: null.IntFrom(4),
+				},
+				CreateClickTracker: &model.CreateClickTracker{
+					Name:              "DembyYounesLawrence",
+					UserId:            4,
+					ClickTrackerSetId: 4,
+				},
+			},
+			mutations: func(t *testing.T, db *sqlx.DB, args *argsCreateClickTracker) *model.CreateClickTracker {
+				err := args.User.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting in the user db")
+
+				err = args.ClickTrackerSet.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting in the click tracker set db")
+
+				repeatedName := strings.Repeat(args.CreateClickTracker.Name, 100)
+
+				args.CreateClickTracker.Name = repeatedName
+				return args.CreateClickTracker
+			},
+			assertions: func(t *testing.T, db *sqlx.DB, clickTracker *model.ClickTracker, err error) {
+				assert.Nil(t, clickTracker, "unexpected non-nil click tracker")
+				assert.Error(t, err, "expected an error due to name exceeding length limit")
 			},
 		},
 	}
@@ -390,9 +408,9 @@ func Test_CreateClickTracker(t *testing.T) {
 			require.NoError(t, err, "unexpected error fetching the db from the tx handler")
 			require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
 
-			clickTrackerData := testCase.mutations(t, db, testCase.args)
+			res := testCase.mutations(t, db, testCase.args)
 
-			createClickTracker, err := m.AddClickTracker(testCtx, txHandlerDb, clickTrackerData)
+			createClickTracker, err := m.AddClickTracker(testCtx, txHandlerDb, res)
 			testCase.assertions(t, db, createClickTracker, err)
 		})
 	}

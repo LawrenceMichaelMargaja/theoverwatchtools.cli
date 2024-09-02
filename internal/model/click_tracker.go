@@ -8,8 +8,9 @@ import (
 )
 
 type CreateClickTracker struct {
-	Name   string `json:"name" validate:"required"`
-	UserId int    `json:"user_id"`
+	Name              string `json:"name" validate:"required"`
+	UserId            int    `json:"user_id"`
+	ClickTrackerSetId int    `json:"click_tracker_set_id"`
 }
 
 type ClickTracker struct {

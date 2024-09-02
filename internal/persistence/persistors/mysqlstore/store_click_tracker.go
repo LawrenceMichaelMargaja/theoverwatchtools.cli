@@ -213,9 +213,10 @@ func (m *Repository) AddClickTracker(ctx context.Context, tx persistence.Transac
 	}
 
 	entry := &mysqlmodel.ClickTracker{
-		Name:          clickTracker.Name,
-		CreatedBy:     null.IntFrom(clickTracker.UserId),
-		LastUpdatedBy: null.IntFrom(clickTracker.UserId),
+		Name:              clickTracker.Name,
+		CreatedBy:         null.IntFrom(clickTracker.UserId),
+		LastUpdatedBy:     null.IntFrom(clickTracker.UserId),
+		ClickTrackerSetID: clickTracker.ClickTrackerSetId,
 	}
 	if err = entry.Insert(ctx, ctxExec, boil.Infer()); err != nil {
 		return nil, fmt.Errorf("insert click tracker: %w", err)
