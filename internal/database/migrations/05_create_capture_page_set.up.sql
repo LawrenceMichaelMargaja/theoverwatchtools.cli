@@ -31,5 +31,98 @@ CREATE TABLE `capture_page_set`
     UNIQUE KEY capture_page_set_unique_name_organization (name, organization_ref_id)
 );
 
+INSERT INTO `capture_page_set` (
+    `name`,
+    `url_name`,
+    `switch_duration`,
+    `organization_ref_id`,
+    `analytics_number_of_forms`,
+    `analytics_impressions`,
+    `analytics_submissions`,
+    `analytics_last_updated_at`,
+    `created_by`,
+    `last_updated_by`,
+    `created_at`,
+    `last_updated_at`,
+    `is_active`
+) VALUES
+    (
+        'Landing Page Set 1',
+        'landing-page-set-1',
+        10,
+        1,
+        50,
+        100,
+        25,
+        UNIX_TIMESTAMP(),
+        2,
+        2,
+        NOW(),
+        NOW(),
+        TRUE
+    );
+
+INSERT INTO `capture_page_set` (
+    `name`,
+    `url_name`,
+    `switch_duration`,
+    `organization_ref_id`,
+    `analytics_number_of_forms`,
+    `analytics_impressions`,
+    `analytics_submissions`,
+    `analytics_last_updated_at`,
+    `created_by`,
+    `last_updated_by`,
+    `created_at`,
+    `last_updated_at`,
+    `is_active`
+) VALUES
+    (
+        'Product Launch Set',
+        'product-launch-set',
+        15,
+        2,
+        75,
+        200,
+        40,
+        UNIX_TIMESTAMP(),
+        3,
+        3,
+        NOW(),
+        NOW(),
+        TRUE
+    );
+
+INSERT INTO `capture_page_set` (
+    `name`,
+    `url_name`,
+    `switch_duration`,
+    `organization_ref_id`,
+    `analytics_number_of_forms`,
+    `analytics_impressions`,
+    `analytics_submissions`,
+    `analytics_last_updated_at`,
+    `created_by`,
+    `last_updated_by`,
+    `created_at`,
+    `last_updated_at`,
+    `is_active`
+) VALUES
+    (
+        'Event Promotion Set',
+        'event-promotion-set',
+        5,
+        3,
+        30,
+        120,
+        15,
+        UNIX_TIMESTAMP(),
+        4,
+        4,
+        NOW(),
+        NOW(),
+        FALSE
+    );
 SET
 FOREIGN_KEY_CHECKS = 1;
+

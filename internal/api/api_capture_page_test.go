@@ -48,27 +48,6 @@ func getTestCasesCreateCapturePage() []testCaseCreateCapturePage {
 				}
 			},
 			args: &argsCreateCapturePage{
-				User: mysqlmodel.User{
-					ID:                4,
-					CreatedBy:         null.IntFrom(2),
-					LastUpdatedBy:     null.IntFrom(2),
-					Firstname:         "Demby",
-					Lastname:          "Abella",
-					CategoryTypeRefID: 1,
-				},
-				CapturePageSet: mysqlmodel.CapturePageSet{
-					ID:            3,
-					Name:          "lawrence",
-					CreatedBy:     null.IntFrom(2),
-					LastUpdatedBy: null.IntFrom(2),
-				},
-				CapturePage: mysqlmodel.CapturePage{
-					ID:               1,
-					Name:             "Mohamed",
-					CreatedBy:        null.IntFrom(2),
-					LastUpdatedBy:    null.IntFrom(2),
-					CapturePageSetID: 3,
-				},
 				CreateCapturePage: &model.CreateCapturePage{
 					Name:             "younes",
 					UserId:           null.IntFrom(2).Int,
@@ -76,17 +55,7 @@ func getTestCasesCreateCapturePage() []testCaseCreateCapturePage {
 				},
 			},
 			mutations: func(t *testing.T, db *sqlx.DB, modules *testassets.Container, args *argsCreateCapturePage) {
-				err := args.User.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err)
 
-				err = args.CapturePageSet.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting in the CapturePageSet db")
-
-				err = args.CapturePage.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting in the CapturePage db")
-
-				_, err = modules.CapturePageService.CreateCapturePage(context.Background(), args.CreateCapturePage)
-				require.NoError(t, err, "error adding the capture page")
 			},
 			assertions: func(t *testing.T, resp []byte, respCode int) {
 				respStr := string(resp)

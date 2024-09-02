@@ -42,67 +42,6 @@ func (i *Service) GetCapturePageSetById(ctx context.Context, handler persistence
 	return nil
 }
 
-func (i *Service) CreateCapturePage(ctx context.Context, params *model.CreateCapturePage) (*model.CapturePage, error) {
-	if err := params.Validate(); err != nil {
-		return nil, errs.New(&errs.Cfg{
-			StatusCode: http.StatusBadRequest,
-			Err:        fmt.Errorf("validate: %w", err),
-		})
-	}
-
-	tx, err := i.cfg.TxProvider.Tx(ctx)
-	if err != nil {
-		return nil, errs.New(&errs.Cfg{
-			StatusCode: http.StatusInternalServerError,
-			Err:        fmt.Errorf("get db: %w", err),
-		})
-	}
-	defer tx.Rollback(ctx)
-
-	capturePage := params.ToCapturePage()
-
-	_, err = i.cfg.Persistor.GetCapturePageSetById(ctx, tx, capturePage.CapturePageSetId)
-	if err != nil {
-		return nil, errs.New(&errs.Cfg{
-			StatusCode: http.StatusBadRequest,
-			Err:        fmt.Errorf("invalid capture_page_set_id: %v", err),
-		})
-	}
-
-	exists, err := i.cfg.Persistor.GetCapturePageByName(ctx, tx, capturePage.Name)
-	if err != nil {
-		if !strings.Contains(err.Error(), sysconsts.ErrExpectedExactlyOneEntry) {
-			return nil, errs.New(&errs.Cfg{
-				StatusCode: http.StatusBadRequest,
-				Err:        fmt.Errorf("check category unique: %w", err),
-			})
-		}
-	}
-	if exists != nil {
-		return nil, errs.New(&errs.Cfg{
-			StatusCode: http.StatusBadRequest,
-			Err:        fmt.Errorf("category already exists"),
-		})
-	}
-
-	capturePageCreated, err := i.cfg.Persistor.CreateCapturePage(ctx, tx, capturePage)
-	if err != nil {
-		return nil, errs.New(&errs.Cfg{
-			StatusCode: http.StatusInternalServerError,
-			Err:        fmt.Errorf("create: %w", err),
-		})
-	}
-
-	if err = tx.Commit(ctx); err != nil {
-		return nil, errs.New(&errs.Cfg{
-			StatusCode: http.StatusInternalServerError,
-			Err:        fmt.Errorf("commit: %v", err),
-		})
-	}
-
-	return capturePageCreated, nil
-}
-
 func (i *Service) AddCapturePage(ctx context.Context, params *model.CreateCapturePage) (*model.CapturePage, error) {
 	if err := params.Validate(); err != nil {
 		return nil, errs.New(&errs.Cfg{

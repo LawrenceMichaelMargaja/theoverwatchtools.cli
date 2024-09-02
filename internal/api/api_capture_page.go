@@ -27,12 +27,12 @@ func (a *Api) ListCapturePages(ctx *fiber.Ctx) error {
 	return a.WriteResponse(ctx, http.StatusOK, capturePages, err)
 }
 
-func (a *Api) CreateCapturePage(ctx *fiber.Ctx) error {
+func (a *Api) AddCapturePage(ctx *fiber.Ctx) error {
 	var body model.CreateCapturePage
 	if err := ctx.BodyParser(&body); err != nil {
 		return ctx.Status(http.StatusBadRequest).JSON(errs.ToArr(err))
 	}
-	capturePage, err := a.cfg.CapturePageService.CreateCapturePage(ctx.Context(), &body)
+	capturePage, err := a.cfg.CapturePageService.AddCapturePage(ctx.Context(), &body)
 	return a.WriteResponse(ctx, http.StatusCreated, capturePage, err)
 }
 
