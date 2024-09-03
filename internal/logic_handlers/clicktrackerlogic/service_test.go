@@ -279,7 +279,7 @@ func TestService_CreateClickTracker(t *testing.T) {
 
 			tt.mutations(t, _dependencies.Db, tt.args)
 
-			capturePage, err := svc.AddClickTrackers(context.Background(), tt.args.CreateClickTracker)
+			capturePage, err := svc.AddClickTracker(context.Background(), tt.args.CreateClickTracker)
 			tt.assertions(t, capturePage, err)
 		})
 	}

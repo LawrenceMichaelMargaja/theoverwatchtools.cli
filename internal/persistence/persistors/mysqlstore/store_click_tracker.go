@@ -11,9 +11,34 @@ import (
 	"github.com/friendsofgo/errors"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"strconv"
 )
+
+func (m *Repository) DropClickTrackerTable(
+	ctx context.Context,
+	tx persistence.TransactionHandler,
+) error {
+	ctxExec, err := mysqltx.GetCtxExecutor(tx)
+	if err != nil {
+		return fmt.Errorf("extract context executor: %v", err)
+	}
+
+	dropStmts := []string{
+		"SET FOREIGN_KEY_CHECKS = 0;",
+		"DROP TABLE click_tracker;",
+		"SET FOREIGN_KEY_CHECKS = 1;",
+	}
+
+	for _, stmt := range dropStmts {
+		if _, err := queries.Raw(stmt).Exec(ctxExec); err != nil {
+			return fmt.Errorf("dropping click tracker table sql stmt: %v", err)
+		}
+	}
+
+	return nil
+}
 
 func (m *Repository) GetClickTrackerById(ctx context.Context, tx persistence.TransactionHandler, id int) (*model.ClickTracker, error) {
 	paginated, err := m.GetClickTrackers(ctx, tx, &model.ClickTrackerFilters{

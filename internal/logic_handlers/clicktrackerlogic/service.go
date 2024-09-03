@@ -34,7 +34,7 @@ func New(cfg *Config) (*Service, error) {
 	return &Service{cfg}, nil
 }
 
-func (i *Service) AddClickTrackers(ctx context.Context, params *model.CreateClickTracker) (*model.ClickTracker, error) {
+func (i *Service) AddClickTracker(ctx context.Context, params *model.CreateClickTracker) (*model.ClickTracker, error) {
 	if err := params.Validate(); err != nil {
 		return nil, errs.New(&errs.Cfg{
 			StatusCode: http.StatusBadRequest,
@@ -56,14 +56,14 @@ func (i *Service) AddClickTrackers(ctx context.Context, params *model.CreateClic
 		if !strings.Contains(err.Error(), sysconsts.ErrExpectedExactlyOneEntry) {
 			return nil, errs.New(&errs.Cfg{
 				StatusCode: http.StatusBadRequest,
-				Err:        fmt.Errorf("check category unique: %v", err),
+				Err:        fmt.Errorf("check click tracker unique: %v", err),
 			})
 		}
 	}
 	if exists != nil {
 		return nil, errs.New(&errs.Cfg{
 			StatusCode: http.StatusBadRequest,
-			Err:        fmt.Errorf("category already exists"),
+			Err:        fmt.Errorf("click tracker already exists"),
 		})
 	}
 

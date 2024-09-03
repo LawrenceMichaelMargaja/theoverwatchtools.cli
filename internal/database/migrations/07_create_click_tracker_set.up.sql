@@ -26,5 +26,11 @@ CREATE TABLE `click_tracker_set`
     UNIQUE KEY click_tracker_set_unique_name_organization (name, organization_id)
 );
 
+INSERT INTO click_tracker_set (
+    id, name, url_name, analytics_number_of_links, analytics_last_updated_at, last_impression_at, organization_id, created_by, last_updated_by, created_at, last_updated_at, is_active
+) VALUES (
+             1, 'Example Set', 'https://example.com', 10, 1693774800, '2023-09-03 10:00:00', 1, 1, 1, '2023-09-01 08:00:00', NULL, TRUE
+         );
+
 SET
 FOREIGN_KEY_CHECKS = 1;
