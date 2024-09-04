@@ -13,6 +13,12 @@ type CreateClickTracker struct {
 	ClickTrackerSetId int    `json:"click_tracker_set_id"`
 }
 
+type UpdateClickTracker struct {
+	Id                int         `json:"id" validate:"required,greater_than_zero"`
+	Name              null.String `json:"name"`
+	ClickTrackerSetId int         `json:"click_tracker_set_id"`
+}
+
 type ClickTracker struct {
 	Id                int       `json:"id" boil:"id"`
 	Name              string    `json:"name" boil:"name"`

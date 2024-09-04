@@ -8,6 +8,7 @@ import (
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/assets/mysqlmodel"
 	"github.com/dembygenesis/local.tools/internal/persistence/database_helpers/mysql/mysqltx"
 	"github.com/dembygenesis/local.tools/internal/sysconsts"
+	"github.com/dembygenesis/local.tools/internal/utilities/strutil"
 	"github.com/friendsofgo/errors"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -23,6 +24,9 @@ func (m *Repository) GetClickTrackerById(ctx context.Context, tx persistence.Tra
 	if err != nil {
 		return nil, fmt.Errorf("click tracker filtered by id: %w", err)
 	}
+
+	fmt.Println("the paginated click tracker --- ", strutil.GetAsJson(paginated))
+	fmt.Println("the paginated row count click tracker --- ", paginated.Pagination.RowCount)
 
 	if paginated.Pagination.RowCount != 1 {
 		return nil, fmt.Errorf(sysconsts.ErrExpectedExactlyOneEntry, id)
@@ -245,4 +249,36 @@ func (m *Repository) DeleteClickTracker(ctx context.Context, tx persistence.Tran
 	}
 
 	return nil
+}
+
+func (m *Repository) UpdateClickTracker(ctx context.Context, tx persistence.TransactionHandler, params *model.UpdateClickTracker) (*model.ClickTracker, error) {
+	if params == nil {
+		return nil, ErrCtNil
+	}
+	ctxExec, err := mysqltx.GetCtxExecutor(tx)
+	if err != nil {
+		return nil, fmt.Errorf("extract context executor: %w", err)
+	}
+
+	entry := &mysqlmodel.ClickTracker{ID: params.Id}
+	cols := []string{mysqlmodel.CapturePageColumns.ID}
+
+	if params.Name.Valid {
+		entry.Name = params.Name.String
+		cols = append(cols, mysqlmodel.ClickTrackerColumns.Name)
+	}
+
+	_, err = entry.Update(ctx, ctxExec, boil.Whitelist(cols...))
+	if err != nil {
+		return nil, fmt.Errorf("update failed: %w", err)
+	}
+
+	clickTracker, err := m.GetClickTrackerById(ctx, tx, entry.ID)
+	if err != nil {
+		return nil, fmt.Errorf("get click tracker by id: %w", err)
+	}
+
+	fmt.Println("the found click tracker --- ", strutil.GetAsJson(clickTracker))
+
+	return clickTracker, nil
 }

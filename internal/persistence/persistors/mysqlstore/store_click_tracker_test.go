@@ -549,3 +549,152 @@ func Test_DeleteClickTracker(t *testing.T) {
 		})
 	}
 }
+
+type argsUpdateClickTracker struct {
+	User                   mysqlmodel.User
+	ClickTrackerSet        mysqlmodel.ClickTrackerSet
+	ClickTracker           mysqlmodel.ClickTracker
+	UpdateClickTrackerData *model.UpdateClickTracker
+}
+
+type testCaseUpdateClickTrackers struct {
+	name       string
+	args       *argsUpdateClickTracker
+	assertions func(t *testing.T, db *sqlx.DB, id int, err error)
+	mutations  func(t *testing.T, db *sqlx.DB, args *argsUpdateClickTracker)
+}
+
+func getTestCasesUpdateClickTrackers() []testCaseUpdateClickTrackers {
+	return []testCaseUpdateClickTrackers{
+		{
+			name: "success-filter-ids-in",
+			args: &argsUpdateClickTracker{
+				User: mysqlmodel.User{
+					ID:                4,
+					Firstname:         "Demby",
+					Lastname:          "Abella",
+					Email:             "demby@test.com",
+					Password:          "password",
+					CategoryTypeRefID: 1,
+				},
+				ClickTrackerSet: mysqlmodel.ClickTrackerSet{
+					ID:            4,
+					Name:          "lawrence",
+					CreatedBy:     null.IntFrom(4),
+					LastUpdatedBy: null.IntFrom(4),
+				},
+				ClickTracker: mysqlmodel.ClickTracker{
+					ID:                1,
+					Name:              "Lawrence",
+					CreatedBy:         null.IntFrom(4),
+					LastUpdatedBy:     null.IntFrom(4),
+					ClickTrackerSetID: 4,
+					IsActive:          true,
+				},
+				UpdateClickTrackerData: &model.UpdateClickTracker{
+					Id: 1,
+					Name: null.String{
+						String: "Demby",
+						Valid:  true,
+					},
+					ClickTrackerSetId: 1,
+				},
+			},
+			mutations: func(t *testing.T, db *sqlx.DB, args *argsUpdateClickTracker) {
+				err := args.User.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting in the user db")
+
+				err = args.ClickTrackerSet.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting in the click tracker set db")
+
+				err = args.ClickTracker.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting the click tracker in the click tracker table.")
+			},
+			assertions: func(t *testing.T, db *sqlx.DB, id int, err error) {
+				require.Nil(t, err, "unexpected non-nil error")
+				entry, err := mysqlmodel.FindClickTracker(context.TODO(), db, id)
+				require.NoError(t, err, "unexpected error fetching the click tracker")
+
+				assert.Equal(t, true, entry.IsActive)
+			},
+		},
+		{
+			name: "failure-non-existent-organization",
+			args: &argsUpdateClickTracker{
+				User: mysqlmodel.User{
+					ID:                4,
+					Firstname:         "Demby",
+					Lastname:          "Abella",
+					Email:             "demby@test.com",
+					Password:          "password",
+					CategoryTypeRefID: 1,
+				},
+				ClickTrackerSet: mysqlmodel.ClickTrackerSet{
+					ID:            4,
+					Name:          "lawrence",
+					CreatedBy:     null.IntFrom(4),
+					LastUpdatedBy: null.IntFrom(4),
+				},
+				ClickTracker: mysqlmodel.ClickTracker{
+					ID:                1,
+					Name:              "Lawrence",
+					CreatedBy:         null.IntFrom(4),
+					LastUpdatedBy:     null.IntFrom(4),
+					ClickTrackerSetID: 4,
+					IsActive:          true,
+				},
+				UpdateClickTrackerData: &model.UpdateClickTracker{
+					Id: 1,
+					Name: null.String{
+						String: "Demby",
+						Valid:  true,
+					},
+					ClickTrackerSetId: 1,
+				},
+			},
+			assertions: func(t *testing.T, db *sqlx.DB, id int, err error) {
+				require.Error(t, err, "expected error when updating a non-existent click tracker")
+				assert.Contains(t, err.Error(), "expected exactly one entry for entity: 1")
+			},
+			mutations: func(t *testing.T, db *sqlx.DB, args *argsUpdateClickTracker) {
+				err := args.User.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting in the user db")
+			},
+		},
+	}
+}
+
+func Test_UpdateClickTracker(t *testing.T) {
+	for _, testCase := range getTestCasesUpdateClickTrackers() {
+		t.Run(testCase.name, func(t *testing.T) {
+			db, cp, cleanup := mysqlhelper.TestGetMockMariaDB(t)
+			defer cleanup()
+			require.NotNil(t, testCase.assertions, "unexpected nil assertions")
+
+			cfg := &Config{
+				Logger:        testLogger,
+				QueryTimeouts: testQueryTimeouts,
+			}
+
+			m, err := New(cfg)
+			require.NoError(t, err, "unexpected error")
+			require.NotNil(t, m, "unexpected nil")
+
+			txHandler, err := mysqltx.New(&mysqltx.Config{
+				Logger:       testLogger,
+				Db:           db,
+				DatabaseName: cp.Database,
+			})
+			require.NoError(t, err, "unexpected error creating the tx handler")
+
+			txHandlerDb, err := txHandler.Db(testCtx)
+			require.NoError(t, err, "unexpected error fetching the db from the tx handler")
+			require.NotNil(t, txHandlerDb, "unexpected nil tx handler db")
+
+			testCase.mutations(t, db, testCase.args)
+
+			_, err = m.UpdateClickTracker(testCtx, txHandlerDb, testCase.args.UpdateClickTrackerData)
+			testCase.assertions(t, db, testCase.args.UpdateClickTrackerData.Id, err)
+		})
+	}
+}
