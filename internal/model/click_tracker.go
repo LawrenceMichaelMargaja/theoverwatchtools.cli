@@ -86,6 +86,14 @@ type ClickTrackerFilters struct {
 	PaginationQueryFilters `swaggerignore:"true"`
 }
 
+type DeleteClickTracker struct {
+	ID int `json:"id" validate:"required,greater_than_zero"`
+}
+
+type RestoreClickTracker struct {
+	ID int `json:"id" validate:"required,greater_than_zero"`
+}
+
 func (c *ClickTrackerFilters) Validate() error {
 	if err := c.ValidatePagination(); err != nil {
 		return fmt.Errorf("pagination: %v", err)

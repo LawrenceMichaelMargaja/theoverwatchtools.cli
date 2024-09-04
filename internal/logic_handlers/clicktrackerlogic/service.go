@@ -56,14 +56,14 @@ func (i *Service) AddClickTrackers(ctx context.Context, params *model.CreateClic
 		if !strings.Contains(err.Error(), sysconsts.ErrExpectedExactlyOneEntry) {
 			return nil, errs.New(&errs.Cfg{
 				StatusCode: http.StatusBadRequest,
-				Err:        fmt.Errorf("check category unique: %v", err),
+				Err:        fmt.Errorf("check click tracker unique: %v", err),
 			})
 		}
 	}
 	if exists != nil {
 		return nil, errs.New(&errs.Cfg{
 			StatusCode: http.StatusBadRequest,
-			Err:        fmt.Errorf("category already exists"),
+			Err:        fmt.Errorf("click tracker already exists"),
 		})
 	}
 
@@ -106,4 +106,82 @@ func (i *Service) ListClickTrackers(
 	}
 
 	return paginated, nil
+}
+
+func (i *Service) UpdateClickTracker(ctx context.Context, params *model.UpdateClickTracker) (*model.ClickTracker, error) {
+	tx, err := i.cfg.TxProvider.Tx(ctx)
+	if err != nil {
+		return nil, errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("get db: %w", err),
+		})
+	}
+	defer tx.Rollback(ctx)
+
+	if err := params.Validate(); err != nil {
+		return nil, fmt.Errorf("validate: %w", err)
+	}
+
+	clickTracker, err := i.cfg.Persistor.UpdateClickTracker(ctx, tx, params)
+	if err != nil {
+		return nil, fmt.Errorf("update click tracker: %w", err)
+	}
+
+	return clickTracker, nil
+}
+
+func (s *Service) DeleteClickTracker(ctx context.Context, params *model.DeleteClickTracker) error {
+	tx, err := s.cfg.TxProvider.Tx(ctx)
+	if err != nil {
+		return errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("get db: %w", err),
+		})
+	}
+	defer tx.Rollback(ctx)
+
+	err = s.cfg.Persistor.DeleteClickTracker(ctx, tx, params.ID)
+	if err != nil {
+		return errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("delete click tracker: %w", err),
+		})
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("commit transaction: %w", err),
+		})
+	}
+
+	return nil
+}
+
+func (s *Service) RestoreClickTracker(ctx context.Context, params *model.RestoreClickTracker) error {
+	tx, err := s.cfg.TxProvider.Tx(ctx)
+	if err != nil {
+		return errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("get db: %w", err),
+		})
+	}
+	defer tx.Rollback(ctx)
+
+	err = s.cfg.Persistor.RestoreClickTracker(ctx, tx, params.ID)
+	if err != nil {
+		return errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("restore click tracker: %w", err),
+		})
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return errs.New(&errs.Cfg{
+			StatusCode: http.StatusInternalServerError,
+			Err:        fmt.Errorf("commit transaction: %w", err),
+		})
+	}
+
+	return nil
 }
