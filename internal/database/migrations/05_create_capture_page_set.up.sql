@@ -125,4 +125,3 @@ INSERT INTO `capture_page_set` (
     );
 SET
 FOREIGN_KEY_CHECKS = 1;
-

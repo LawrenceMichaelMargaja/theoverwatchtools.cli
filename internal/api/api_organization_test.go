@@ -426,6 +426,7 @@ func Test_ListOrganizations(t *testing.T) {
 				Port:                3000,
 				CategoryService:     handlers.CategoryService,
 				OrganizationService: handlers.OrganizationService,
+				CapturePageService:  handlers.CapturePageService,
 				Logger:              logger.New(context.TODO()),
 			}
 

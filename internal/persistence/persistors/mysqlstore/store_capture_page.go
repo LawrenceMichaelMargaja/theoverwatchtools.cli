@@ -14,6 +14,7 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+	"strconv"
 )
 
 func (m *Repository) DropCapturePageTable(
@@ -233,8 +234,6 @@ func (m *Repository) GetCapturePageById(ctx context.Context, tx persistence.Tran
 		IdsIn: []int{id},
 	})
 
-	fmt.Println("the paginated --- ", strutil.GetAsJson(paginated))
-
 	if err != nil {
 		return nil, fmt.Errorf("capture page filtered by id: %w", err)
 	}
@@ -259,6 +258,35 @@ func (m *Repository) GetCapturePageByName(ctx context.Context, tx persistence.Tr
 	}
 
 	return &paginated.CapturePages[0], nil
+}
+
+func (m *Repository) CreateCapturePage(ctx context.Context, tx persistence.TransactionHandler, capturePage *model.CapturePage) (*model.CapturePage, error) {
+	ctxExec, err := mysqltx.GetCtxExecutor(tx)
+	if err != nil {
+		return nil, fmt.Errorf("extract context executor: %w", err)
+	}
+
+	createdBY, _ := strconv.Atoi(capturePage.CreatedBy)
+	lastUpdateBY, _ := strconv.Atoi(capturePage.LastUpdatedBy)
+
+	fmt.Println("the CapturePage ----- ", strutil.GetAsJson(capturePage))
+
+	entry := mysqlmodel.CapturePage{
+		Name:             capturePage.Name,
+		CreatedBy:        null.IntFrom(createdBY),
+		LastUpdatedBy:    null.IntFrom(lastUpdateBY),
+		CapturePageSetID: capturePage.CapturePageSetId,
+	}
+	if err = entry.Insert(ctx, ctxExec, boil.Infer()); err != nil {
+		return nil, fmt.Errorf("insert capture page: %w", err)
+	}
+
+	capturePage, err = m.GetCapturePageById(ctx, tx, entry.ID)
+	if err != nil {
+		return nil, fmt.Errorf("get capture page by id: %w", err)
+	}
+
+	return capturePage, nil
 }
 
 func (m *Repository) AddCapturePage(ctx context.Context, tx persistence.TransactionHandler, capturePage *model.CreateCapturePage) (*model.CapturePage, error) {

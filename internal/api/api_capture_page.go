@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/dembygenesis/local.tools/internal/model"
 	"github.com/dembygenesis/local.tools/internal/utilities/errs"
+	"github.com/dembygenesis/local.tools/internal/utilities/strutil"
 	"github.com/gofiber/fiber/v2"
 	"github.com/volatiletech/null/v8"
 	"net/http"
@@ -25,6 +26,15 @@ func (a *Api) ListCapturePages(ctx *fiber.Ctx) error {
 
 	capturePages, err := a.cfg.CapturePageService.ListCapturePages(ctx.Context(), &filter)
 	return a.WriteResponse(ctx, http.StatusOK, capturePages, err)
+}
+
+func (a *Api) AddCapturePage(ctx *fiber.Ctx) error {
+	var body model.CreateCapturePage
+	if err := ctx.BodyParser(&body); err != nil {
+		return ctx.Status(http.StatusBadRequest).JSON(errs.ToArr(err))
+	}
+	capturePage, err := a.cfg.CapturePageService.AddCapturePage(ctx.Context(), &body)
+	return a.WriteResponse(ctx, http.StatusCreated, capturePage, err)
 }
 
 func (a *Api) AddCapturePage(ctx *fiber.Ctx) error {
@@ -60,6 +70,9 @@ func (a *Api) UpdateCapturePage(ctx *fiber.Ctx) error {
 	if err := ctx.BodyParser(&body); err != nil {
 		return ctx.Status(http.StatusBadRequest).JSON(errs.ToArr(err))
 	}
+
+	fmt.Println("the body --- ", strutil.GetAsJson(&body))
+
 	capturePage, err := a.cfg.CapturePageService.UpdateCapturePage(ctx.Context(), &body)
 	return a.WriteResponse(ctx, http.StatusOK, capturePage, err)
 }
