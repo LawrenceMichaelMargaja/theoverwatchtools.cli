@@ -476,7 +476,7 @@ func getTestCasesDeleteClickTrackers() []testCaseDeleteClickTrackers {
 			},
 		},
 		{
-			name: "failure-non-existent-organization",
+			name: "failure-non-existent-click-tracker",
 			args: &argsDeleteClickTracker{
 				User: mysqlmodel.User{
 					ID:                4,
@@ -504,7 +504,7 @@ func getTestCasesDeleteClickTrackers() []testCaseDeleteClickTrackers {
 			assertions: func(t *testing.T, db *sqlx.DB, id int) {
 				_, err := mysqlmodel.FindClickTracker(context.TODO(), db, id)
 				require.Error(t, err, "expected an error for non-existent click tracker")
-				require.Contains(t, err.Error(), "no rows", "error should indicate that the organization was not found")
+				require.Contains(t, err.Error(), "no rows", "error should indicate that the click tracker was not found")
 			},
 			mutations: func(t *testing.T, db *sqlx.DB, args *argsDeleteClickTracker) {
 				err := args.User.Insert(context.Background(), db, boil.Infer())
@@ -619,7 +619,7 @@ func getTestCasesUpdateClickTrackers() []testCaseUpdateClickTrackers {
 			},
 		},
 		{
-			name: "failure-non-existent-organization",
+			name: "failure-non-existent-click-tracker",
 			args: &argsUpdateClickTracker{
 				User: mysqlmodel.User{
 					ID:                4,
@@ -758,7 +758,7 @@ func getTestCasesRestoreClickTrackers() []testCaseRestoreClickTrackers {
 			},
 		},
 		{
-			name: "failure-non-existent-organization",
+			name: "failure-non-existent-click-tracker",
 			args: &argsRestoreClickTracker{
 				User: mysqlmodel.User{
 					ID:                4,
