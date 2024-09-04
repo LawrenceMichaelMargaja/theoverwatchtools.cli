@@ -75,7 +75,7 @@ func getConcreteDependencies(t *testing.T) (*dependencies, func(ignoreErrors ...
 
 type argsGetCapturePages struct {
 	filter            *model.CapturePageFilters
-	User              mysqlmodel.CapturePage
+	CapturePage       mysqlmodel.CapturePage
 	CreateCapturePage *model.CreateCapturePage
 	CapturePageSet    mysqlmodel.CapturePageSet
 }
@@ -94,7 +94,7 @@ func getGetCapturePagesTestCases() []testCaseGetCapturePages {
 			name:            "success",
 			getDependencies: getConcreteDependencies,
 			args: &argsGetCapturePages{
-				User: mysqlmodel.CapturePage{
+				CapturePage: mysqlmodel.CapturePage{
 					Name:             "Demby",
 					CreatedBy:        null.IntFrom(1),
 					LastUpdatedBy:    null.IntFrom(1),
@@ -110,7 +110,7 @@ func getGetCapturePagesTestCases() []testCaseGetCapturePages {
 				err := args.CapturePageSet.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting into capture_page_set")
 
-				err = args.User.Insert(context.Background(), db, boil.Infer())
+				err = args.CapturePage.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting into the capture_page db")
 			},
 			assertions: func(t *testing.T, paginated *model.PaginatedCapturePages, err error) {
@@ -146,7 +146,6 @@ func TestService_GetCapturePages(t *testing.T) {
 }
 
 type argsUpdateCapturePage struct {
-	User              mysqlmodel.CapturePage
 	CapturePage       mysqlmodel.CapturePage
 	CapturePageSet    mysqlmodel.CapturePageSet
 	UpdateCapturePage *model.UpdateCapturePage
@@ -165,7 +164,7 @@ func getTestCasesUpdateCapturePage() []testCaseUpdateCapturePage {
 		{
 			name: "success",
 			args: &argsUpdateCapturePage{
-				User: mysqlmodel.CapturePage{
+				CapturePage: mysqlmodel.CapturePage{
 					ID:               1,
 					Name:             "Demby",
 					CreatedBy:        null.IntFrom(1),
@@ -188,7 +187,7 @@ func getTestCasesUpdateCapturePage() []testCaseUpdateCapturePage {
 				err := args.CapturePageSet.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting sample data")
 
-				err = args.User.Insert(context.Background(), db, boil.Infer())
+				err = args.CapturePage.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting sample data")
 			},
 			assertions: func(t *testing.T, params *model.UpdateCapturePage, capturePage *model.CapturePage, err error) {
@@ -203,7 +202,7 @@ func getTestCasesUpdateCapturePage() []testCaseUpdateCapturePage {
 		{
 			name: "success-name-only",
 			args: &argsUpdateCapturePage{
-				User: mysqlmodel.CapturePage{
+				CapturePage: mysqlmodel.CapturePage{
 					ID:               1,
 					Name:             "Demby",
 					CreatedBy:        null.IntFrom(1),
@@ -221,7 +220,7 @@ func getTestCasesUpdateCapturePage() []testCaseUpdateCapturePage {
 				err := args.CapturePageSet.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting sample data")
 
-				err = args.User.Insert(context.Background(), db, boil.Infer())
+				err = args.CapturePage.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting sample data")
 			},
 			assertions: func(t *testing.T, params *model.UpdateCapturePage, capturePage *model.CapturePage, err error) {
@@ -289,7 +288,7 @@ func TestService_UpdateCapturePage(t *testing.T) {
 }
 
 type argsCreateCapturePage struct {
-	User              mysqlmodel.CapturePage
+	CapturePage       mysqlmodel.CapturePage
 	CapturePageSet    mysqlmodel.CapturePageSet
 	CreateCapturePage *model.CreateCapturePage
 }
@@ -308,7 +307,7 @@ func getTestCasesCreateCapturePage() []testCaseCreateCapturePage {
 			name:            "success",
 			getDependencies: getConcreteDependencies,
 			args: &argsCreateCapturePage{
-				User: mysqlmodel.CapturePage{
+				CapturePage: mysqlmodel.CapturePage{
 					ID:               1,
 					Name:             "Demby",
 					CreatedBy:        null.IntFrom(1),
@@ -338,7 +337,7 @@ func getTestCasesCreateCapturePage() []testCaseCreateCapturePage {
 				err := args.CapturePageSet.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting in the user db")
 
-				err = args.User.Insert(context.Background(), db, boil.Infer())
+				err = args.CapturePage.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting in the user db")
 			},
 		},
