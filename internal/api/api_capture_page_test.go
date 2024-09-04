@@ -19,6 +19,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 )
 
@@ -123,7 +124,7 @@ type argsListCapturePages struct {
 	Organization      mysqlmodel.Organization
 }
 
-type testCaseCapturePages struct {
+type testCaseListCapturePages struct {
 	name            string
 	getContainer    func(t *testing.T) (*testassets.Container, func())
 	args            *argsListCapturePages
@@ -132,8 +133,8 @@ type testCaseCapturePages struct {
 	assertions      func(t *testing.T, resp []byte, respCode int)
 }
 
-func getTestCasesCapturePages() []testCaseCapturePages {
-	testCases := []testCaseCapturePages{
+func getTestCasesListCapturePages() []testCaseListCapturePages {
+	testCases := []testCaseListCapturePages{
 		{
 			name: "success",
 			queryParameters: map[string]interface{}{
@@ -147,18 +148,6 @@ func getTestCasesCapturePages() []testCaseCapturePages {
 					CreatedBy:         null.IntFrom(4),
 					LastUpdatedBy:     null.IntFrom(4),
 					CategoryTypeRefID: 2,
-					OrganizationRefID: null.IntFrom(5),
-				},
-				Category: mysqlmodel.Category{
-					ID:        2,
-					CreatedBy: null.IntFrom(1),
-				},
-				CapturePageSet: mysqlmodel.CapturePageSet{
-					ID:                3,
-					Name:              "demby",
-					CreatedBy:         null.IntFrom(4),
-					LastUpdatedBy:     null.IntFrom(4),
-					OrganizationRefID: null.IntFrom(5),
 				},
 				CapturePage: mysqlmodel.CapturePage{
 					ID:               2,
@@ -175,7 +164,7 @@ func getTestCasesCapturePages() []testCaseCapturePages {
 				},
 				CreateCapturePage: &model.CreateCapturePage{
 					Name:             "demby",
-					UserId:           4,
+					UserId:           1,
 					CapturePageSetId: 1,
 				},
 			},
@@ -183,14 +172,8 @@ func getTestCasesCapturePages() []testCaseCapturePages {
 				err := args.User.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting in the user db")
 
-				err = args.Category.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting in the category db")
-
 				err = args.Organization.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting in the organization db")
-
-				err = args.CapturePageSet.Insert(context.Background(), db, boil.Infer())
-				require.NoError(t, err, "error inserting in the CapturePageSet db")
 
 				err = args.CapturePage.Insert(context.Background(), db, boil.Infer())
 				require.NoError(t, err, "error inserting in the CapturePage db")
@@ -223,7 +206,7 @@ func getTestCasesCapturePages() []testCaseCapturePages {
 }
 
 func Test_ListCapturePages(t *testing.T) {
-	for _, testCase := range getTestCasesCapturePages() {
+	for _, testCase := range getTestCasesListCapturePages() {
 		t.Run(testCase.name, func(t *testing.T) {
 			db, _, cleanup := mysqlhelper.TestGetMockMariaDB(t)
 			defer cleanup()
@@ -254,6 +237,132 @@ func Test_ListCapturePages(t *testing.T) {
 			}
 
 			testCase.mutations(t, db, handlers, testCase.args)
+
+			resp, err := api.app.Test(req, 100)
+			require.NoError(t, err, "unexpected error executing test")
+
+			respBytes, err := io.ReadAll(resp.Body)
+			require.Nil(t, err, "unexpected error reading the response")
+			testCase.assertions(t, respBytes, resp.StatusCode)
+		})
+	}
+}
+
+type argsDeleteCapturePages struct {
+	User              mysqlmodel.User
+	Category          mysqlmodel.Category
+	CapturePage       mysqlmodel.CapturePage
+	CapturePageSet    mysqlmodel.CapturePageSet
+	Organization      mysqlmodel.Organization
+	CreateCapturePage *model.CreateCapturePage
+}
+
+type testCaseCapturePages struct {
+	name            string
+	getContainer    func(t *testing.T) (*testassets.Container, func())
+	args            *argsDeleteCapturePages
+	mutations       func(t *testing.T, db *sqlx.DB, modules *testassets.Container, args *argsDeleteCapturePages) int
+	queryParameters map[string]interface{}
+	assertions      func(t *testing.T, resp []byte, respCode int)
+}
+
+func getTestCasesDeleteCapturePages() []testCaseCapturePages {
+	testCases := []testCaseCapturePages{
+		{
+			name: "success",
+			queryParameters: map[string]interface{}{
+				"ids_in": []int{1},
+			},
+			args: &argsDeleteCapturePages{
+				User: mysqlmodel.User{
+					ID:                4,
+					Firstname:         "Demby",
+					Lastname:          "Abella",
+					CreatedBy:         null.IntFrom(4),
+					LastUpdatedBy:     null.IntFrom(4),
+					CategoryTypeRefID: 2,
+				},
+				CapturePage: mysqlmodel.CapturePage{
+					ID:               2,
+					Name:             "demby",
+					CreatedBy:        null.IntFrom(4),
+					LastUpdatedBy:    null.IntFrom(4),
+					CapturePageSetID: 3,
+				},
+				Organization: mysqlmodel.Organization{
+					ID:            5,
+					Name:          "demby",
+					CreatedBy:     null.IntFrom(4),
+					LastUpdatedBy: null.IntFrom(4),
+				},
+				CreateCapturePage: &model.CreateCapturePage{
+					Name:             "demby",
+					UserId:           1,
+					CapturePageSetId: 1,
+				},
+			},
+			mutations: func(t *testing.T, db *sqlx.DB, modules *testassets.Container, args *argsDeleteCapturePages) int {
+				err := args.User.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting in the user db")
+
+				err = args.Organization.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting in the organization db")
+
+				err = args.CapturePage.Insert(context.Background(), db, boil.Infer())
+				require.NoError(t, err, "error inserting in the CapturePage db")
+
+				createdCapturePage, addCapturePageError := modules.CapturePageService.AddCapturePage(context.Background(), args.CreateCapturePage)
+				require.NoError(t, addCapturePageError, "error adding the capture page")
+
+				return createdCapturePage.Id
+			},
+			getContainer: func(t *testing.T) (*testassets.Container, func()) {
+				ctn, cleanup := testassets.GetConcreteContainer(t)
+				return ctn, func() {
+					cleanup()
+				}
+			},
+			assertions: func(t *testing.T, resp []byte, respCode int) {
+				require.Equal(t, http.StatusNoContent, respCode, "unexpected response code")
+				assert.Empty(t, resp, "expected empty response body for no-content response")
+			},
+		},
+	}
+
+	return testCases
+}
+
+func Test_DeleteCapturePage(t *testing.T) {
+	for _, testCase := range getTestCasesDeleteCapturePages() {
+		t.Run(testCase.name, func(t *testing.T) {
+			db, _, cleanup := mysqlhelper.TestGetMockMariaDB(t)
+			defer cleanup()
+			if testCase.queryParameters == nil {
+				testCase.queryParameters = make(map[string]interface{})
+			}
+
+			handlers, _ := testCase.getContainer(t)
+
+			cfg := &Config{
+				BaseUrl:             testassets.MockBaseUrl,
+				Port:                3000,
+				CategoryService:     handlers.CategoryService,
+				OrganizationService: handlers.OrganizationService,
+				CapturePageService:  handlers.CapturePageService,
+				Logger:              logger.New(context.TODO()),
+			}
+
+			api, err := New(cfg)
+			require.NoError(t, err, "unexpected error instantiating api")
+			require.NotNil(t, api, "unexpected api nil instance")
+
+			id := testCase.mutations(t, db, handlers, testCase.args)
+
+			req := httptest.NewRequest(http.MethodDelete, "/api/v1/capturepage/"+strconv.Itoa(id), nil)
+			req.Header = map[string][]string{
+				"Content-Type":    {"application/json"},
+				"Accept-Encoding": {"gzip", "deflate", "br"},
+			}
 
 			resp, err := api.app.Test(req, 100)
 			require.NoError(t, err, "unexpected error executing test")
