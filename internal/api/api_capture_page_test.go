@@ -115,6 +115,7 @@ func Test_CreateCapturePage(t *testing.T) {
 				CategoryService:     handlers.CategoryService,
 				OrganizationService: handlers.OrganizationService,
 				CapturePageService:  handlers.CapturePageService,
+				ClickTrackerService: handlers.ClickTrackerService,
 				Logger:              logger.New(context.TODO()),
 			}
 
@@ -243,6 +244,7 @@ func Test_ListCapturePages(t *testing.T) {
 				CategoryService:     handlers.CategoryService,
 				OrganizationService: handlers.OrganizationService,
 				CapturePageService:  handlers.CapturePageService,
+				ClickTrackerService: handlers.ClickTrackerService,
 				Logger:              logger.New(context.TODO()),
 			}
 

@@ -98,6 +98,8 @@ func Test_CreateOrganization(t *testing.T) {
 				Port:                3000,
 				CategoryService:     handlers.CategoryService,
 				OrganizationService: handlers.OrganizationService,
+				CapturePageService:  handlers.CapturePageService,
+				ClickTrackerService: handlers.ClickTrackerService,
 				Logger:              logger.New(context.TODO()),
 			}
 
@@ -205,6 +207,8 @@ func Test_ListOrganizations(t *testing.T) {
 				Port:                3000,
 				CategoryService:     handlers.CategoryService,
 				OrganizationService: handlers.OrganizationService,
+				CapturePageService:  handlers.CapturePageService,
+				ClickTrackerService: handlers.ClickTrackerService,
 				Logger:              logger.New(context.TODO()),
 			}
 
@@ -300,6 +304,8 @@ func Test_DeleteOrganization(t *testing.T) {
 				Port:                3000,
 				CategoryService:     handlers.CategoryService,
 				OrganizationService: handlers.OrganizationService,
+				CapturePageService:  handlers.CapturePageService,
+				ClickTrackerService: handlers.ClickTrackerService,
 				Logger:              logger.New(context.TODO()),
 			}
 
@@ -397,6 +403,8 @@ func Test_UpdateOrganization(t *testing.T) {
 				Port:                3000,
 				CategoryService:     handlers.CategoryService,
 				OrganizationService: handlers.OrganizationService,
+				CapturePageService:  handlers.CapturePageService,
+				ClickTrackerService: handlers.ClickTrackerService,
 				Logger:              logger.New(context.TODO()),
 			}
 
@@ -500,6 +508,8 @@ func Test_RestoreOrganization(t *testing.T) {
 				Port:                3000,
 				CategoryService:     handlers.CategoryService,
 				OrganizationService: handlers.OrganizationService,
+				CapturePageService:  handlers.CapturePageService,
+				ClickTrackerService: handlers.ClickTrackerService,
 				Logger:              logger.New(context.TODO()),
 			}
 

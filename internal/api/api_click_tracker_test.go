@@ -167,7 +167,6 @@ func getTestCasesClickTrackers() []testCaseClickTrackers {
 			mutations: func(t *testing.T, db *sqlx.DB, modules *testassets.Container, args *argsListClickTrackers) {
 				_, err := modules.ClickTrackerService.AddClickTracker(context.Background(), args.CreateClickTracker)
 				require.NoError(t, err, "error adding the click tracker")
-
 			},
 			getContainer: func(t *testing.T) (*testassets.Container, func()) {
 				ctn, cleanup := testassets.GetConcreteContainer(t)
