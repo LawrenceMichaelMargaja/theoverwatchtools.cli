@@ -58,14 +58,14 @@ func (i *Service) CreateCapturePage(ctx context.Context, params *model.CreateCap
 		if !strings.Contains(err.Error(), sysconsts.ErrExpectedExactlyOneEntry) {
 			return nil, errs.New(&errs.Cfg{
 				StatusCode: http.StatusBadRequest,
-				Err:        fmt.Errorf("check category unique: %w", err),
+				Err:        fmt.Errorf("check capture page unique: %w", err),
 			})
 		}
 	}
 	if exists != nil {
 		return nil, errs.New(&errs.Cfg{
 			StatusCode: http.StatusBadRequest,
-			Err:        fmt.Errorf("category already exists"),
+			Err:        fmt.Errorf("capture page already exists"),
 		})
 	}
 
