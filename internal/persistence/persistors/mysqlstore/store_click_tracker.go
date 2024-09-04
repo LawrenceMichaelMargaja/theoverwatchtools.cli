@@ -282,3 +282,22 @@ func (m *Repository) UpdateClickTracker(ctx context.Context, tx persistence.Tran
 
 	return clickTracker, nil
 }
+
+func (m *Repository) RestoreClickTracker(
+	ctx context.Context,
+	tx persistence.TransactionHandler,
+	id int,
+) error {
+	ctxExec, err := mysqltx.GetCtxExecutor(tx)
+	if err != nil {
+		return fmt.Errorf("get ctx exec: %w", err)
+	}
+
+	entry := &mysqlmodel.ClickTracker{ID: id, IsActive: true}
+
+	if _, err = entry.Update(ctx, ctxExec, boil.Whitelist(mysqlmodel.ClickTrackerColumns.IsActive)); err != nil {
+		return fmt.Errorf("restore: %w", err)
+	}
+
+	return nil
+}
