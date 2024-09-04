@@ -446,7 +446,7 @@ func getTestCasesRestoreCapturePages() []testCaseRestoreCapturePages {
 				assert.Empty(t, resp, "unexpected non-empty response body")
 
 				capturePage, err := mysqlmodel.FindCapturePage(context.TODO(), db, capID)
-				require.NoError(t, err, "unexpected error fetching organization from database")
+				require.NoError(t, err, "unexpected error fetching capture page from database")
 
 				assert.True(t, capturePage.IsActive, "expected is_active to be true")
 			},
