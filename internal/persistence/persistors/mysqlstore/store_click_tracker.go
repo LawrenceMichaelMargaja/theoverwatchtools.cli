@@ -229,3 +229,20 @@ func (m *Repository) AddClickTracker(ctx context.Context, tx persistence.Transac
 
 	return createClickTracker, nil
 }
+
+func (m *Repository) DeleteClickTracker(ctx context.Context, tx persistence.TransactionHandler, clickTrackerId int) error {
+	ctxExec, err := mysqltx.GetCtxExecutor(tx)
+	if err != nil {
+		return fmt.Errorf("get ctx exec: %w", err)
+	}
+
+	entry := &mysqlmodel.ClickTracker{
+		ID:       clickTrackerId,
+		IsActive: false,
+	}
+	if _, err = entry.Update(ctx, ctxExec, boil.Whitelist(mysqlmodel.ClickTrackerColumns.IsActive)); err != nil {
+		return fmt.Errorf("delete: %w", err)
+	}
+
+	return nil
+}
