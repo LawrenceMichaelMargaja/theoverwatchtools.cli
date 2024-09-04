@@ -195,6 +195,9 @@ func (i *Service) UpdateCapturePage(ctx context.Context, params *model.UpdateCap
 	}
 
 	capturePage, err := i.cfg.Persistor.UpdateCapturePage(ctx, tx, params)
+
+	fmt.Println("the capture page at the biz --- ", strutil.GetAsJson(capturePage))
+
 	if err != nil {
 		return nil, fmt.Errorf("update capture page: %w", err)
 	}

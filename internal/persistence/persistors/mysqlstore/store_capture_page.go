@@ -71,6 +71,8 @@ func (m *Repository) UpdateCapturePage(ctx context.Context, tx persistence.Trans
 		return nil, fmt.Errorf("extract context executor: %w", err)
 	}
 
+	fmt.Println("the params at the store --- ", strutil.GetAsJson(params))
+
 	entry := &mysqlmodel.CapturePage{ID: params.Id}
 	cols := []string{mysqlmodel.CapturePageColumns.ID}
 
@@ -85,6 +87,9 @@ func (m *Repository) UpdateCapturePage(ctx context.Context, tx persistence.Trans
 	}
 
 	capturePage, err := m.GetCapturePageById(ctx, tx, entry.ID)
+
+	fmt.Println("the capture page by id --- ", strutil.GetAsJson(capturePage))
+
 	if err != nil {
 		return nil, fmt.Errorf("get capture page by id: %w", err)
 	}
@@ -97,6 +102,8 @@ func (m *Repository) GetCapturePages(ctx context.Context, tx persistence.Transac
 	if err != nil {
 		return nil, fmt.Errorf("extract context executor: %w", err)
 	}
+
+	fmt.Println("the filters at the store --- ", strutil.GetAsJson(filters))
 
 	res, err := m.getCapturePages(ctx, ctxExec, filters)
 	if err != nil {
@@ -233,8 +240,6 @@ func (m *Repository) GetCapturePageById(ctx context.Context, tx persistence.Tran
 	paginated, err := m.GetCapturePages(ctx, tx, &model.CapturePageFilters{
 		IdsIn: []int{id},
 	})
-
-	fmt.Println("the paginated --- ", strutil.GetAsJson(paginated))
 
 	if err != nil {
 		return nil, fmt.Errorf("capture page filtered by id: %w", err)
